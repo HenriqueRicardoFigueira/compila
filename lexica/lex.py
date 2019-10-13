@@ -6,122 +6,135 @@
 # -------------------------------------------------------------------------
 
 import ply.lex as lex
-import sys
 
 # Palavras reservadas que definem a linguagem
 
-chaves = {
-    'até': 'ATE',
-    'então': 'ENTAO',
-    'escreva': 'ESCREVA',
-    'fim': 'FIM',
-    'flutuante': 'FLUTUANTE',
-    'inteiro': 'INTEIRO',
-    'leia': 'LEIA',
-    'repita': 'REPITA',
-    'retorna': 'RETORNA',
-    'se': 'SE',
-    'senão': 'SENAO',
-}
 
-# Tokens para o PLY
+class Lexer:
 
-tokens = [
-    'ATRIBUICAO',
-    'ADICAO',
-    'COLCHETE_D',
-    'COLCHETE_E',
-    'CIENTIFICO',
-    'DIFERENTE',
-    'DIVISAO',
-    'DOIS_PONTOS',
-    'E_LOGI',
-    'ID',
-    'IGUAL',
-    'MAIORIGUAL',
-    'MAIOR',
-    'MAIS',
-    'MENORIGUAL',
-    'MENOR',
-    'MENOS',
-    'MULTIPLICACAO',
-    'NEGACAO',
-    'OU_LOGI',
-    'PARENTESE_D',
-    'PARENTESE_E',
-    'SUBTRACAO',
-    'VIRGULA'
-] + list(chaves.values())
+    def __init__(self):
+        self.lexer = lex.lex(debug=False, module=self, optimize=False)
 
-# Regex para definir tokens
+    chaves = {
+        'até': 'ATE',
+        'então': 'ENTAO',
+        'escreva': 'ESCREVA',
+        'fim': 'FIM',
+        'flutuante': 'FLUTUANTE',
+        'inteiro': 'INTEIRO',
+        'leia': 'LEIA',
+        'repita': 'REPITA',
+        'retorna': 'RETORNA',
+        'se': 'SE',
+        'senão': 'SENAO',
+    }
 
-t_ADICAO = r'\+'
-t_ATRIBUICAO = r':='
-#t_CIENTIFICO = r'\([+-]?('
-t_COLCHETE_D = r'\]'
-t_COLCHETE_E = r'\['
-t_DIFERENTE = r'\!\='
-t_DIVISAO = r'/'
-t_DOIS_PONTOS = r':'
-t_E_LOGI = r'\&\&'
-t_IGUAL = r'='
-t_MAIORIGUAL = r'>='
-t_MAIOR = r'>'
-t_MENORIGUAL = r'<='
-t_MENOR = r'<'
-t_MULTIPLICACAO = r'\*'
-t_NEGACAO = r'\!'
-t_OU_LOGI = r'\|\|'
-t_PARENTESE_D = r'\)'
-t_PARENTESE_E = r'\('
-t_SUBTRACAO = r'\-'
-t_VIRGULA = r'\,'
+    # Tokens para o PLY
 
-# Identificar ids
+    tokens = [
+        'ATRIBUICAO',
+        'ADICAO',
+        'ABRE_COL',
+        'FECHA_COL',
+        'CIENTIFICO',
+        'DIFERENTE',
+        'DIVISAO',
+        'DOIS_PONTOS',
+        'E_LOGI',
+        'ID',
+        'IGUAL',
+        'MAIORIGUAL',
+        'MAIOR',
+        'MAIS',
+        'MENORIGUAL',
+        'MENOR',
+        'MENOS',
+        'MULTIPLICACAO',
+        'NEGACAO',
+        'OU_LOGI',
+        'ABRE_PAR',
+        'FECHA_PAR',
+        'SUBTRACAO',
+        'VIRGULA'
+    ] + list(chaves.values())
 
-def t_ID(t):
-    r'[a-zA-Zá-ñÁ-Ñ][a-zA-Zá-ñÁ-Ñ0-9_]*'
-    t.type = chaves.get(t.value, 'ID')
-    return t
+    # Regex para definir tokens
 
-# Identificar comentarios
+    t_ADICAO = r'\+'
+    t_ATRIBUICAO = r':='
+    #t_CIENTIFICO = r'\([+-]?('
+    t_FECHA_COL = r'\]'
+    t_ABRE_COL = r'\['
+    t_DIFERENTE = r'\!\='
+    t_DIVISAO = r'/'
+    t_DOIS_PONTOS = r':'
+    t_E_LOGI = r'\&\&'
+    t_IGUAL = r'='
+    t_MAIORIGUAL = r'>='
+    t_MAIOR = r'>'
+    t_MENORIGUAL = r'<='
+    t_MENOR = r'<'
+    t_MULTIPLICACAO = r'\*'
+    t_NEGACAO = r'\!'
+    t_OU_LOGI = r'\|\|'
+    t_FECHA_PAR = r'\)'
+    t_ABRE_PAR = r'\('
+    t_SUBTRACAO = r'\-'
+    t_VIRGULA = r'\,'
 
-def t_COMMENT(t):
-    r'\{[^}]*[^{]*\}'
+    # Identificar ids
 
-# Identificar números flutuantes
-def t_FLUTUANTE(t):
-    r'[0-9]+[\.][0-9]*'
-    t.value = float(t.value)
-    return t
-# Identificar números inteiros
+    def t_ID(self, t):
+        r'[a-zA-Zá-ñÁ-Ñ][a-zA-Zá-ñÁ-Ñ0-9_]*'
+        t.type = self.chaves.get(t.value, 'ID')
+        return t
 
-def t_INTEIRO(t):
-    r'[0-9]+'
-    t.value = int(t.value)
-    return t
+    # Identificar comentarios
 
-# Contador de linhas documentação PLY
+    def t_COMMENT(self, t):
+        r'\{[^}]*[^{]*\}'
 
-def t_NEWLINE(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+    # Identificar números flutuantes
 
-# Ignorar expressões documentação PLY
+    def t_FLUTUANTE(self, t):
+        r'[0-9]+[\.][0-9]*'
+        t.value = float(t.value)
+        return t
+    # Identificar números inteiros
 
-t_ignore = ' \t'
+    def t_INTEIRO(self, t):
+        r'[0-9]+'
+        t.value = int(t.value)
+        return t
 
-# Identificar erros documentação PLY
+    # Contador de linhas documentação PLY
 
-def t_error(t):
-    print("Item ilegal: '%s', linha %d, coluna %d" %(t.value[0], t.lineno, t.lexpos))
-    t.lexer.skip(1)
+    def t_NEWLINE(self, t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
 
-lex.lex()
-f = open(sys.argv[1])
-lex.input(f.read())
-while True:
-    token = lex.token()
-    if not token:
-        break
-    print(token.type )
+    # Ignorar expressões documentação PLY
+
+    t_ignore = ' \t'
+
+    # Identificar erros documentação PLY
+
+    def t_error(self, t):
+        print("Item ilegal: '%s', linha %d, coluna %d" %
+              (t.value[0], t.lineno, t.lexpos))
+        t.lexer.skip(1)
+
+    def print(self, code):
+        lex.input(code)
+        while True:
+            token = lex.token()
+            if not token:
+                break
+            print(token.type)
+
+
+if __name__ == '__main__':
+    from sys import argv
+    lexer = Lexer()
+    f = open(argv[1])
+    lexer.print(f.read())
