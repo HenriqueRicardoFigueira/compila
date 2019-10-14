@@ -32,10 +32,24 @@ class Parser:
         )
         parser = yacc.yacc(debug=False, module=self, optimize=False)
         self.ast = parser.parse(code)
-     
+
+    def p_programa(self, p):
+        'programa : lista_declaracoes'
+        p[0] = Tree('programa', [p[1]])
+
+    def p_lista_declaracoes(self, p):
+        'lista_declaracoes : lista_declaracoes', p[[1]]
+        
+    
+    def seeTree(node, level="\n"):
+        if node != None:
+            print("%s %s %s" %(level, node.type, node.value))
+            for son in node.child:
+                seeTree(son, level+"\n")
+
 
 if __name__ == '__main__':
     from sys import argv, exit
     f = open(argv[1])
     t = Parser(f.read())
-    print_tree(t.ast)
+    seeTree(t.ast)
