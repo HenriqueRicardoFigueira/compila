@@ -1,5 +1,4 @@
 inteiro: n
-flutuante: a[10]
 
 inteiro fatorial(inteiro: n)
     inteiro: fat
@@ -15,18 +14,26 @@ inteiro fatorial(inteiro: n)
     fim
 fim
 
-{asdsa}
-{
-
-asdasdasdasdasdas
-
-
-}
-
 inteiro principal()
     leia(n)
     escreva(fatorial(n))
     retorna(0)
 fim
 
+1.32e110
 
+1.32E-110
+
+-1.32e110
+
++1.32e110
+
+(1++2)
++2
+
+-3
+{}
+
+{
+    saf
+}

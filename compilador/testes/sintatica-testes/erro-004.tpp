@@ -1,0 +1,5 @@
+inteiro: 
+
+inteiro principal()
+
+fim
