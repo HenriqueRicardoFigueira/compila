@@ -149,7 +149,6 @@ class Parser:
                                 | leia
                                 | escreva
                                 | retorna
-                                | error
         '''
         p[0] = Tree('acao', [p[1]])
 
@@ -288,7 +287,7 @@ class Parser:
         'vazio :'
 #------------------------------------- erros -------------------------------#
 
-    # def p_error(self, p):
+    #def p_error(self, p):
     #    if p:
     #        print("Erro sintático: '%s', linha %d" % (p.value, p.lineno))
     #        print(p.type)
@@ -297,7 +296,7 @@ class Parser:
     #        yacc.restart()
     #        print('Erro sintático: definições incompletas!')
     #        exit(1)
-    
+    #
     def p_lista_declaracoes_error(self, p):
         'lista_declaracoes : error error'
         print("Erro de declaração")
@@ -309,7 +308,7 @@ class Parser:
         exit(1)
 
     def p_declaracao_error(self, p):
-        'declaracao: error'
+        'declaracao : error'
         print("Error de declaração")
         exit(1)
     
@@ -337,6 +336,105 @@ class Parser:
         'var : ID error'
         print("Erro de variavel")
         exit(1)
+    
+    def p_var_error(self, p):
+        'var : error'
+        print("Error de variavel")
+        exit(1)
+
+    def p_indice1_error(self, p):
+        'indice : ABRE_COL error FECHA_COL'
+        print("Error de indice")
+        exit(1)
+    
+    def p_indice_error(self, p):
+        'indice : error ABRE_COL error FECHA_COL'
+        print("Error de indice")
+        exit(1)
+    
+    def p_tipo_error(self, p):
+        'tipo : error'
+        print("Error de tipo")
+        exit(1)
+
+    
+    def p_declaracao_funcao1_error(self, p):
+        'declaracao_funcao : error'
+        print("Erro de declaração de função")
+        exit(1)
+    
+    def p_declaracao_funcao_error(self, p):
+        'declaracao_funcao : error error'
+        print("Erro de declaração de função")
+        exit(1)
+
+    def p_cabecalho_error(self, p):
+        'cabecalho : ID ABRE_PAR error FECHA_PAR error FIM'
+        print("Erro de cabeçalho")
+        exit(1)
+
+    def p_lista_parametros_error(self, p):
+        'lista_parametros : error VIRGULA error'
+        print("Error de parâmetro")
+        exit(1)
+
+    def p_copo_error(self, p):
+        'corpo : error error'
+        print("Erro corpo")
+        exit(1)
+
+    def p_acao_error(self, p):
+        'acao : error'
+        print("Erro ação")
+        exit(1)
+
+    def p_se_error(self, p):
+        'se : SE error ENTAO error FIM'
+        print("Erro expressão SE")
+        exit(1)
+
+    def p_se1_error(self, p):
+        'se : SE error ENTAO error SENAO error FIM'
+        print("Erro expressão SE")
+        exit(1)
+
+    def p_repita_error(self, p):
+        'repita : REPITA error ATE error'
+        print("Error expressão REPITA")
+        exit(1)
+
+    def p_atribuicao_error(self, p):
+        'atribuicao : error ATRIBUICAO error'
+        print("Erro atribuição")
+        exit(1)
+
+    def p_leia_error(self, p):
+        'leia : error ABRE_PAR error FECHA_PAR'
+        print("Error na expressão LEIA")
+        exit(1)
+
+    def p_escreva_error(self, p):
+        'escreva : error ABRE_PAR error FECHA_PAR'
+        print("Error na expressão ESCREVA")
+        exit(1)
+
+    def p_retorna_error(self, p):
+        'retorna : error ABRE_PAR error FECHA_PAR'
+        print("Error expressão RETORNA")
+        exit(1)
+
+    def p_expressao_error(self, p):
+        '''
+                expressao 	: error
+        '''
+        print("Erro de expressão")
+        exit(1)
+
+    def p_expressao_simples_error(self, p):
+        'expressao_simples : error'
+        print("Error expressão SIMPLES")
+        exit(1)
+    
 
 def tree_view(node, strson, father, w, i, j):
     if node != None:
