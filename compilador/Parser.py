@@ -40,16 +40,13 @@ class Parser:
         'programa : lista_declaracoes'
         p[0] = Tree('programa', [p[1]])
 
-
     def p_lista_declaracoes(self, p):
         'lista_declaracoes : lista_declaracoes declaracao'
         p[0] = Tree('lista_declaracoes', [p[1], p[2]])
-        
 
     def p_lista_declaracoes1(self, p):
         'lista_declaracoes : declaracao'
         p[0] = Tree('lista_declaracoes', [p[1]])
-        
 
     def p_declaracao(self, p):
         '''
@@ -58,30 +55,26 @@ class Parser:
                                     | declaracao_funcao
         '''
         p[0] = Tree('declaracao', [p[1]])
-    
+
     def p_declaracao_variaveis(self, p):
         'declaracao_variaveis : tipo DOIS_PONTOS lista_variaveis'
         p[0] = Tree('declaracao_variaveis', [p[1], p[3]], p[2])
-        
 
     def p_inicializacao_variaveis(self, p):
         'inicializacao_variaveis : atribuicao'
         p[0] = Tree('inicializacao_variaveis', [p[1]])
-        
 
     def p_lista_variaveis(self, p):
         'lista_variaveis : lista_variaveis VIRGULA var'
-        p[0] = Tree('lista_variaveis', [p[1] , p[3]])
-       
+        p[0] = Tree('lista_variaveis', [p[1], p[3]])
 
     def p_lista_variaveis1(self, p):
         'lista_variaveis : var'
         p[0] = Tree('lista_variaveis', [p[1]])
-        
+
     def p_var(self, p):
         'var : ID'
-        p[0] = Tree('var', [Tree(p[1])], p[1])
-       
+        p[0] = Tree('var', [Tree("ID", [Tree(p[1])])], p[1])
 
     def p_var1(self, p):
         'var : ID indice'
@@ -117,7 +110,8 @@ class Parser:
 
     def p_cabecalho(self, p):
         'cabecalho : ID ABRE_PAR lista_parametros FECHA_PAR corpo FIM'
-        p[0] = Tree('cabecalho', [Tree(p[2]), p[3], Tree(p[4]) ,p[5]], str(p[1]))
+        p[0] = Tree('cabecalho', [Tree("ABRE_PAR", [Tree(p[2])]),
+                                  p[3], Tree("FECHA_PAR", [Tree(p[4])]), p[5]], str(p[1]))
 
     def p_lista_parametros(self, p):
         'lista_parametros : lista_parametros VIRGULA parametro'
@@ -162,15 +156,15 @@ class Parser:
     def p_se(self, p):
         'se : SE expressao ENTAO corpo FIM'
 
-        p[0] = Tree('se', [ p[2],  p[4]])
+        p[0] = Tree('se', [p[2],  p[4]])
 
     def p_se1(self, p):
         'se : SE expressao ENTAO corpo SENAO corpo FIM'
-        p[0] = Tree('se', [ p[2],  p[4],  p[6]])
+        p[0] = Tree('se', [p[2],  p[4],  p[6]])
 
     def p_repita(self, p):
         'repita : REPITA corpo ATE expressao'
-        p[0] = Tree('repita', [ p[2],  p[4]])
+        p[0] = Tree('repita', [p[2],  p[4]])
 
     def p_atribuicao(self, p):
         'atribuicao : var ATRIBUICAO expressao'
@@ -178,11 +172,11 @@ class Parser:
 
     def p_leia(self, p):
         'leia : LEIA ABRE_PAR ID FECHA_PAR'
-        p[0] = Tree('leia', [] ,p[3])
+        p[0] = Tree('leia', [], p[3])
 
     def p_escreva(self, p):
         'escreva : ESCREVA ABRE_PAR expressao FECHA_PAR'
-        p[0] = Tree('escreva', [ p[3]])
+        p[0] = Tree('escreva', [p[3]])
 
     def p_retorna(self, p):
         'retorna : RETORNA ABRE_PAR expressao FECHA_PAR'
@@ -256,11 +250,11 @@ class Parser:
 
     def p_inteiro(self, p):
         'inteiro : INTEIRO'
-        p[0] = Tree('num_inteiro', [] , p[1])
+        p[0] = Tree('num_inteiro', [], p[1])
 
     def p_flutuante(self, p):
         'flutuante : FLUTUANTE'
-        p[0] = Tree('num_flutuante', [] , p[1])
+        p[0] = Tree('num_flutuante', [], p[1])
 
     def p_fator(self, p):
         '''
@@ -273,17 +267,15 @@ class Parser:
 
     def p_fator1(self, p):
         'fator : ABRE_PAR expressao FECHA_PAR'
-        p[0] = Tree('fator',[p[2]])
+        p[0] = Tree('fator', [p[2]])
 
     def p_chamada_funcao(self, p):
         'chamada_funcao : ID ABRE_PAR lista_argumentos FECHA_PAR'
         p[0] = Tree('chamada_funcao',  [p[3]], p[1])
-       
 
     def p_lista_argumentos(self, p):
         'lista_argumentos 	: lista_argumentos VIRGULA expressao'
         p[0] = Tree('lista_argumentos', [p[1], p[3]])
-        
 
     def p_lista_argumentos1(self, p):
         '''
@@ -291,37 +283,77 @@ class Parser:
                                                         | vazio
         '''
         p[0] = Tree('lista_argumentos', [p[1]])
-       
 
     def p_vazio(self, p):
         'vazio :'
+#------------------------------------- erros -------------------------------#
 
-    def p_error(self, p):
-        if p:
-            print("Erro sintático: '%s', linha %d" % (p.value, p.lineno))
-            exit(1)
-        else:
-            # yacc.restart()
-            print('Erro sintático: definições incompletas!')
-            exit(1)
+    # def p_error(self, p):
+    #    if p:
+    #        print("Erro sintático: '%s', linha %d" % (p.value, p.lineno))
+    #        print(p.type)
+    #        exit(1)
+    #    else:
+    #        yacc.restart()
+    #        print('Erro sintático: definições incompletas!')
+    #        exit(1)
+    
+    def p_lista_declaracoes_error(self, p):
+        'lista_declaracoes : error error'
+        print("Erro de declaração")
+        exit(1)
+
+    def p_lista_declaracoes1_error(self, p):
+        'lista_declaracoes : error'
+        print("Erro de declaração")
+        exit(1)
+
+    def p_declaracao_error(self, p):
+        'declaracao: error'
+        print("Error de declaração")
+        exit(1)
+    
+    def p_inicializacao_variaveis_error(self, p):
+        'inicializacao_variaveis : error'
+        print("Error de inicialização")
+        exit(1)
+
+    def p_lista_variaveis_error(self, p):
+        'lista_variaveis : error VIRGULA error'
+        print("Error de variavies")
+        exit(1)
+
+    def p_lista_variaveis1_error(self, p):
+        'lista_variaveis : error'
+        print("Error de variaveis")
+        exit(1)
+
+    def p_declaracao_variaveis_error(self, p):
+        'declaracao_variaveis : error DOIS_PONTOS error'
+        print("Erro na declaração de variaveis \n")
+        exit(1)
+
+    def p_var1_error(self, p):
+        'var : ID error'
+        print("Erro de variavel")
+        exit(1)
 
 def tree_view(node, strson, father, w, i, j):
-		if node != None :
-			i = i + 1
-			father = str(node) + " " + str(i-1)+ " " #+ str(j-1)
-			for son in node.child:
-				strson = str(son) + " " + str(i) + " "# + str(j)
-				w.edge(father, strson)
-				j = j + 1
-				tree_view(son, strson, father, w, i, j)
+    if node != None:
+        i = i + 1
+        father = str(node) + " " + str(i-1) + " "  # + str(j-1)
+        for son in node.child:
+            strson = str(son) + " " + str(i) + " "  # + str(j)
+            w.edge(father, strson)
+            j = j + 1
+            tree_view(son, strson, father, w, i, j)
+
 
 if __name__ == '__main__':
     from sys import argv, exit
     a = argv[1].split('/')
     f = open(argv[1])
     t = Parser(f.read())
-    w = Digraph('G', filename='Saidas/'+a[3] +str('.gv'))
-    tree_view(t.ast,'','', w, 0, 1)
+    w = Digraph('G', filename='Saidas/'+a[3] + str('.gv'))
+    tree_view(t.ast, '', '', w, 0, 1)
     w.view()
-  
-    
