@@ -110,8 +110,10 @@ class Parser:
 
     def p_cabecalho(self, p):
         'cabecalho : ID ABRE_PAR lista_parametros FECHA_PAR corpo FIM'
-        p[0] = Tree('cabecalho', [Tree("ABRE_PAR", [Tree(p[2])]),
-                                  p[3], Tree("FECHA_PAR", [Tree(p[4])]), p[5]], str(p[1]))
+        p[0] = Tree('cabecalho', [Tree("Func", [Tree(p[1])]),
+                                Tree("ABRE_PAR", [Tree(p[2])]),
+                                p[3], Tree("FECHA_PAR", [Tree(p[4])]),
+                                Tree(p[6]), p[5]], str(p[1]))
 
     def p_lista_parametros(self, p):
         'lista_parametros : lista_parametros VIRGULA parametro'
