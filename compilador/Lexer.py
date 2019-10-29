@@ -7,13 +7,55 @@
 
 import ply.lex as lex
 
-# Palavras reservadas que definem a linguagem
+class Table:
 
+    def __init__(self):
+        self.simbols = []
+    
+    def tablePrint(self):
+        for node in self.simbols:
+            node.nodeprint()
+
+class Node:
+
+    def __init__(self, token, lexema, tipo, din, tam, escopo, inicializada, linha, coluna):
+        self.token = token
+        self.lexema = lexema
+        self.tipo = tipo
+        self.din = din
+        self.tam = tam
+        self.escopo = escopo
+        self.inicializada = False
+        self.linha = linha
+        self.coluna = coluna
+    
+    def nodeprint(self):
+        print(self.token, self.lexema, self.tipo, self.din, self.tam, self.escopo, self.inicializada, self.linha, self.coluna)
 
 class Lexer:
 
     def __init__(self):
         self.lexer = lex.lex(debug=False, module=self, optimize=False)
+        self.table = Table()
+
+    def insertSimbols(self, code):
+        flag = False
+        lex.input(code)
+        while True:
+            token = lex.token()
+            if not token:
+                break
+            if token.type == "ID":
+                if len(self.table.simbols) > 0:
+                    for n in self.table.simbols:
+                        if n.lexema == token.value:
+                            flag = True
+                            break
+                if flag == False:
+                    node = Node(token.type, token.value, "", "", "", "", "", token.lineno, token.lexpos)
+                    self.table.simbols.append(node)
+            flag = False
+
 
     chaves = {
         'até': 'ATE',
@@ -130,11 +172,14 @@ class Lexer:
             token = lex.token()
             if not token:
                 break
-            print(token.type)
+            print(token.type, token.value)
 
 
 if __name__ == '__main__':
     from sys import argv
     lexer = Lexer()
     f = open(argv[1])
+    table = lexer.table
+    lexer.insertSimbols(f.read())
     lexer.print(f.read())
+    table.tablePrint()

@@ -8,8 +8,10 @@
 from ply import yacc
 from Lexer import Lexer
 from graphviz import Digraph
+from Lexer import Node
 
 
+h = 0
 class Tree:
 
     def __init__(self, type_node, child=[], value=" ", line=""):
@@ -27,6 +29,8 @@ class Parser:
     def __init__(self, code):
         self.lex = Lexer()
         self.tokens = self.lex.tokens
+        self.lex.insertSimbols(code)
+        self.table = self.lex.table
         self.precedence = (
             ('left', 'SENAO'),
             ('left', 'IGUAL', 'MAIORIGUAL', 'MAIOR', 'MENORIGUAL', 'MENOR'),
@@ -58,6 +62,7 @@ class Parser:
 
     def p_declaracao_variaveis(self, p):
         'declaracao_variaveis : tipo DOIS_PONTOS lista_variaveis'
+        print(p[1], p[3])
         p[0] = Tree('declaracao_variaveis', [p[1], p[3]], p[2])
 
     def p_inicializacao_variaveis(self, p):
@@ -66,14 +71,17 @@ class Parser:
 
     def p_lista_variaveis(self, p):
         'lista_variaveis : lista_variaveis VIRGULA var'
+       
         p[0] = Tree('lista_variaveis', [p[1], p[3]])
 
     def p_lista_variaveis1(self, p):
         'lista_variaveis : var'
+        print(p[1])
         p[0] = Tree('lista_variaveis', [p[1]])
 
     def p_var(self, p):
         'var : ID'
+        print(p[1])
         p[0] = Tree('var', [Tree("ID", [Tree(p[1])])], p[1])
 
     def p_var1(self, p):
@@ -90,11 +98,11 @@ class Parser:
 
     def p_tipo(self, p):
         'tipo : INTEIRO'
-        p[0] = Tree('inteiro', [])
+        p[0] = Tree('TIPO', [Tree('inteiro')])
 
     def p_tipo1(self, p):
         'tipo : FLUTUANTE'
-        p[0] = Tree('flutuante', [])
+        p[0] = Tree('TIPO', [Tree('flutuante')])
 
     def p_tipo2(self, p):
         'tipo : CIENTIFICO'
@@ -110,10 +118,10 @@ class Parser:
 
     def p_cabecalho(self, p):
         'cabecalho : ID ABRE_PAR lista_parametros FECHA_PAR corpo FIM'
-        p[0] = Tree('cabecalho', [Tree("Func", [Tree(p[1])]),
+        p[0] = Tree('cabecalho', [Tree("ID", [Tree(p[1])]),
                                 Tree("ABRE_PAR", [Tree(p[2])]),
                                 p[3], Tree("FECHA_PAR", [Tree(p[4])]),
-                                Tree(p[6]), p[5]], str(p[1]))
+                                p[5], Tree(p[6])], str(p[1]))
 
     def p_lista_parametros(self, p):
         'lista_parametros : lista_parametros VIRGULA parametro'
@@ -287,6 +295,9 @@ class Parser:
 
     def p_vazio(self, p):
         'vazio :'
+        global h
+        p[0] = Tree('vazio '+ str(h))
+        h+=1
 #------------------------------------- erros -------------------------------#
 
     #def p_error(self, p):
@@ -299,6 +310,7 @@ class Parser:
     #        print('Erro sintático: definições incompletas!')
     #        exit(1)
     #
+
     def p_lista_declaracoes_error(self, p):
         'lista_declaracoes : error error'
         print("Erro de declaração")
@@ -456,4 +468,5 @@ if __name__ == '__main__':
     t = Parser(f.read())
     w = Digraph('G', filename='Saidas/'+a[3] + str('.gv'))
     tree_view(t.ast, '', '', w, 0, 1)
+    #t.table.tablePrint()
     w.view()
