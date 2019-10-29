@@ -13,10 +13,10 @@ class Table:
         self.simbols = []
     
     def tablePrint(self):
-        for node in self.simbols:
-            node.nodeprint()
+        for simbol in self.simbols:
+            simbol.simbolprint()
 
-class Node:
+class Simbol:
 
     def __init__(self, token, lexema, tipo, din, tam, escopo, inicializada, linha, coluna):
         self.token = token
@@ -29,7 +29,7 @@ class Node:
         self.linha = linha
         self.coluna = coluna
     
-    def nodeprint(self):
+    def simbolprint(self):
         print(self.token, self.lexema, self.tipo, self.din, self.tam, self.escopo, self.inicializada, self.linha, self.coluna)
 
 class Lexer:
@@ -52,8 +52,8 @@ class Lexer:
                             flag = True
                             break
                 if flag == False:
-                    node = Node(token.type, token.value, "", "", "", "", "", token.lineno, token.lexpos)
-                    self.table.simbols.append(node)
+                    simbol = Simbol(token.type, token.value, "", "", "", "", "", token.lineno, token.lexpos)
+                    self.table.simbols.append(simbol)
             flag = False
 
 
@@ -182,4 +182,3 @@ if __name__ == '__main__':
     table = lexer.table
     lexer.insertSimbols(f.read())
     lexer.print(f.read())
-    table.tablePrint()
