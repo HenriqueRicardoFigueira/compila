@@ -9,23 +9,30 @@ class Semantica:
         self.lex.insertSimbols(code)
         self.table = self.lex.table        
 
-def prefix(root, t, escopo):
+def prefix(root, t, escopo, tipo, father):
     if root:
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
         if str(root) == "declaracao_variaveis":
-            addTipo(root, t, escopo)
-
+            tipo = root.child[0].child[0]
+        if len(root.child) == 0:
+            if str(root.value) != 'inteiro' and str(root.value) != 'flutuante' and str(root.value) != 'num_inteiro' and str(root.value) != 'num_flutuante':
+                for node in t.table.simbols:
+                    if str(root) == node.lexema:
+                        node.tipo = tipo
+                        node.escopo = escopo
+        father = root
         for son in root.child:
-            prefix(son, t, escopo)
+            prefix(son, t, escopo, tipo, father)
 
-def addTipo(node, t, escopo):
-    child = node.child[1].child[0].child[0].child[0]
-    tipo = node.child[0].child[0]
-    for simbol in t.table.simbols:
-        if simbol.lexema == str(child):
-            simbol.tipo = tipo
-            simbol.escopo = escopo
+#def addTipo(node, t, escopo):
+#    tipo = node.child[0].child[0]
+#    for simbol in t.table.simbols:
+#        if simbol.lexema == str(child):
+#            simbol.tipo = tipo
+#            simbol.escopo = escopo
+#            simbol.tam = tamanho
+#            simbol.din = dim
 
 if __name__ == '__main__':
     from sys import argv, exit
@@ -33,5 +40,7 @@ if __name__ == '__main__':
     f = open(argv[1])
     t = Semantica(f.read())
     escopo = "global"
-    prefix(t.parser.ast, t, escopo)
+    tipo = ""
+    father = ""
+    prefix(t.parser.ast, t, escopo, tipo, father)
     t.table.tablePrint()
