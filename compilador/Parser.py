@@ -81,7 +81,7 @@ class Parser:
 
     def p_var1(self, p):
         'var : ID indice'
-        p[0] = Tree('var', [p[2]], p[1])
+        p[0] = Tree('var', [Tree(p[1], [p[2]])], [])
 
     def p_indice(self, p):
         'indice : indice ABRE_COL expressao FECHA_COL'

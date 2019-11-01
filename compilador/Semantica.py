@@ -6,21 +6,21 @@ class Semantica:
         self.lex = Lexer()
         self.tokens = self.lex.tokens
         self.parser = Parser(code)
-        self.lex.insertSimbols(code)
+        self.lex.insertSimbols(code, "")
         self.table = self.lex.table        
 
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     for node in t.table.simbols:
-
-        if str(simbol) == node.lexema:
+        if str(simbol) == node.lexema or escopo == None:
             node.tipo = tipo
             node.escopo = escopo
             node.din = dim
             node.func = func
             node.tam[0] = tam
             node.tam[1] = tam2
-
-def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim):
+        
+            
+def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
@@ -32,28 +32,26 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim):
             if str(root.child[0]) == 'indice':
                 dim = 2   
         if len(root.child) == 0:
-            if str(root) != 'inteiro' and str(root) != 'flutuante' and str(root) != 'num_inteiro' and str(root) != 'num_flutuante':
+            if str(father) == 'ID':
                 insertSimbol(root, t, escopo, tipo, dim, func, tam, tam2)
             
             if str(root) == 'num_inteiro' or str(root) == 'num_flutuante':
-                if dim == 2 and tam != 0:
-                    print("entrei")
-                    print(root)
+                if dim == 2:
                     tam2 = root.value
+                    tam = tamaux
                 else:
-                    print("entrei")
                     tam = root.value
-
+                    tamaux = root.value
                 insertSimbol(var, t, escopo, tipo, dim, func, tam, tam2)
        
         father = root
         for son in root.child:
-            prefix(son, t, escopo, tipo, father, func, tam, tam2, var, dim)
+            prefix(son, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux)
 
 if __name__ == '__main__':
     from sys import argv, exit
     a = argv[1].split('/')
     f = open(argv[1])
     t = Semantica(f.read())
-    prefix(t.parser.ast, t, "global", "", "", False, 0, 0, None, 0)
+    prefix(t.parser.ast, t, "global", "", "", False, 0, 0, None,0, 0)
     t.table.tablePrint()

@@ -39,23 +39,16 @@ class Lexer:
         self.lexer = lex.lex(debug=False, module=self, optimize=False)
         self.table = Table()
 
-    def insertSimbols(self, code):
-        flag = False
+    def insertSimbols(self, code, ant):
         lex.input(code)
         while True:
             token = lex.token()
             if not token:
                 break
-            if token.type == "ID":
-                if len(self.table.simbols) > 0:
-                    for n in self.table.simbols:
-                        if n.lexema == token.value:
-                            flag = True
-                            break
-                if flag == False:
-                    simbol = Simbol(token.type, token.value, "", "", "", "", "", token.lineno, token.lexpos, False)
-                    self.table.simbols.append(simbol)
-            flag = False
+            if token.type == "ID" and (ant.type == "DOIS_PONTOS" or ant.type == "VIRGULA"):
+                simbol = Simbol(str(token.type), token.value, "", "", "", None ,"", token.lineno, token.lexpos, False)
+                self.table.simbols.append(simbol)
+            ant = token
 
 
     chaves = {
@@ -181,5 +174,6 @@ if __name__ == '__main__':
     lexer = Lexer()
     f = open(argv[1])
     table = lexer.table
-    lexer.insertSimbols(f.read())
+    lexer.insertSimbols(f.read(), "")
     lexer.print(f.read())
+    #lexer.table.tablePrint()
