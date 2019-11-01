@@ -11,9 +11,12 @@ class Semantica:
 
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     for node in t.table.simbols:
-        if str(simbol) == node.lexema or escopo == None:
+        if str(simbol) == node.lexema:
+            if node.escopo == None:
+                node.escopo = escopo
+            if escopo != node.escopo:
+                pass
             node.tipo = tipo
-            node.escopo = escopo
             node.din = dim
             node.func = func
             node.tam[0] = tam
