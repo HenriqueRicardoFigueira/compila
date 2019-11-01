@@ -18,7 +18,7 @@ class Table:
 
 class Simbol:
 
-    def __init__(self, token, lexema, tipo, din, tam, escopo, inicializada, linha, coluna, func):
+    def __init__(self, token, lexema, tipo, din, tam, escopo, linha, coluna, func):
         self.token = token
         self.lexema = lexema
         self.tipo = tipo
@@ -29,6 +29,7 @@ class Simbol:
         self.linha = linha
         self.coluna = coluna
         self.func = func
+        self.visitada = False
     
     def simbolprint(self):
         print(self.token, self.lexema, self.tipo, self.din, self.tam, self.escopo, self.inicializada, self.func, self.linha, self.coluna)
@@ -45,8 +46,9 @@ class Lexer:
             token = lex.token()
             if not token:
                 break
+           # print(token)
             if token.type == "ID" and (ant.type == "DOIS_PONTOS" or ant.type == "VIRGULA"):
-                simbol = Simbol(str(token.type), token.value, "", "", "", None ,"", token.lineno, token.lexpos, False)
+                simbol = Simbol(str(token.type), token.value, "", "", 0, None , token.lineno, token.lexpos, False)
                 self.table.simbols.append(simbol)
             ant = token
 

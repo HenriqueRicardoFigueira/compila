@@ -18,22 +18,22 @@ fim
 
 { implementação do bubble sort }
 bubble_sort()
-  inteiro: i
-  i := 0
+  inteiro: h
+  h := 0
   repita
-    inteiro: j
-    j := 0
+    inteiro: k
+    k := 0
     repita
-      se vet[i] > v[j] então
+      se vet[h] > v[k] então
         inteiro: temp
-        temp := vet[i]
-        vet[i] := vet[j]
-        vet[j] := temp
+        temp := vet[h]
+        vet[h] := vet[k]
+        vet[k] := temp
       fim
-      j := j + 1
-    até j < i
-    i := i + 1
-  até i < tam
+      k := k + 1
+    até k < h
+    h := h + 1
+  até h < tam
 fim
 
 { programa principal }

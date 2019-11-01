@@ -11,16 +11,16 @@ class Semantica:
 
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     for node in t.table.simbols:
-        if str(simbol) == node.lexema:
+        if str(simbol) == node.lexema and node.visitada == False:
             if node.escopo == None:
                 node.escopo = escopo
-            if escopo != node.escopo:
-                pass
             node.tipo = tipo
             node.din = dim
             node.func = func
             node.tam[0] = tam
             node.tam[1] = tam2
+            node.visitada = True
+            
         
             
 def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
