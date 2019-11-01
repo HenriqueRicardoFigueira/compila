@@ -9,6 +9,10 @@ class Semantica:
         self.lex.insertSimbols(code, "")
         self.table = self.lex.table        
 
+def insertFunc(simbol, t, escopo, tipo):
+    x = Simbol("FUNC", str(simbol), tipo, escopo, 0, 0, 0, 0, True)
+    t.table.simbols.append(x)
+
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     for node in t.table.simbols:
         if str(simbol) == node.lexema and node.visitada == False:
@@ -27,6 +31,9 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
+            if(len(father.child) == 2):
+                tipo = father.child[0].child[0]
+            insertFunc(root.child[0].child[0], t, escopo, tipo)
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
         if str(root) == "indice":
