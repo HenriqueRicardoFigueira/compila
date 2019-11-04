@@ -17,5 +17,5 @@ inteiro principal ()
 		V[i] := i+1
 		i := i + 1
 	até i = 100
-	multivet()
+	multivet(100)
 fim

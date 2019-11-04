@@ -29,10 +29,12 @@ def checkRules(t):
     #função principal
     princ = False
     for simbol in t.table.simbols:
-        if simbol.lexema == "principal" and (simbol.token) == "FUNC":
+        if simbol.inicializada == False and simbol.lexema == "FUNC":
+            print("Aviso: Função" + simbol.lexema + "declarada, mas não ultilizada.")
+        if simbol.lexema == "principal" and simbol.token == "FUNC":
             princ = True            
     if princ == False:
-        print("Erro Sintático: Função principal não declarada")
+        print("Erro Sintático: Função principal não declarada.")
         return      
             
 def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
@@ -58,6 +60,8 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
         
         if str(root) == "chamada_funcao":
             flag = False
+            i = 0
+            idx = 0
             if str(root.value) == "principal":
                 print("Erro Semântico: Chamada para a função principal não permitida")
                 return
@@ -65,18 +69,32 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 if simbol.lexema == root.value and str(simbol.token) == "FUNC":
                    s = simbol.par
                    flag = True
+                   idx = i
                    break
+                i += 1
             if flag == False:
-                print("Erro Semântico: Função" +root.value+ "não declarada")
+                print("Erro Semântico: Função " +root.value+ " não declarada")
                 return
             y = str(root.child[0].child[0])
             y = y.split(" ")
-            if (s == len(root.child[0].child) and y[0] != "vazio"):
-                pass
-            else:
-                if y[0] == "vazio":
-                    return
-                print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
+            
+            if s == 1:
+                if y[0] != "vazio":
+                    pass
+                else:
+                    print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
+            if s > 1:
+                if s == len(root.child[0].child):
+                    pass
+                else:
+                    print("Erro Semânctico: Chamada à função com número de parâmetros menor que o declarado")
+            #if (s == len(root.child[0].child) or y[0] == "vazio"):
+                #t.table.simbols[idx].inicializada = True
+                #print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
+            #else:
+                #if y[0] == "vazio":
+                #    return
+            #    print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
                 
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
