@@ -29,10 +29,12 @@ def checkRules(t):
     #função principal
     princ = False
     for simbol in t.table.simbols:
-        if simbol.inicializada == False and simbol.lexema == "FUNC":
-            print("Aviso: Função" + simbol.lexema + "declarada, mas não ultilizada.")
+        if simbol.inicializada == False and simbol.token == "FUNC" and simbol.lexema != "principal":
+            print("Aviso: Função " + simbol.lexema + " declarada, mas não ultilizada.")
         if simbol.lexema == "principal" and simbol.token == "FUNC":
-            princ = True            
+            princ = True
+        if simbol.token == "ID" and simbol.inicializada == False:
+            print("Aviso: Variável "+ simbol.lexema + " declarada mas não ultilizada")            
     if princ == False:
         print("Erro Sintático: Função principal não declarada.")
         return      
@@ -80,21 +82,16 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             
             if s == 1:
                 if y[0] != "vazio":
+                    t.table.simbols[idx].inicializada = True
                     pass
                 else:
                     print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
             if s > 1:
                 if s == len(root.child[0].child):
+                    t.table.simbols[idx].inicializada = True
                     pass
                 else:
                     print("Erro Semânctico: Chamada à função com número de parâmetros menor que o declarado")
-            #if (s == len(root.child[0].child) or y[0] == "vazio"):
-                #t.table.simbols[idx].inicializada = True
-                #print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
-            #else:
-                #if y[0] == "vazio":
-                #    return
-            #    print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
                 
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
