@@ -38,9 +38,9 @@ def checkRules(t):
 def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
         par = 0
-        s = 0
+        s = None
         if str(root) == "retorna":
-            if root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
+            if escopo == "principal" and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
                 print("Erro Semântico: Função Principal deveria retornar inteiro, mas retorna vazio.")
                 return
         if str(root) == "cabecalho":
@@ -53,17 +53,20 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 if str(x[0]) != "vazio":
                     par = len(root.child[2].child)
             insertFunc(root.child[0].child[0], t, escopo, tipo, par)
-        if str(root) == "lista_argumentos":
+        
+        if str(root) == "chamada_funcao":
             for simbol in t.table.simbols:
-                if simbol.lexema == father.value and str(simbol.token) == "FUNC":
+                if simbol.lexema == root.value and str(simbol.token) == "FUNC":
                    s = simbol.par
-            y = str(root.child[0])
+            y = str(root.child[0].child[0])
             y = y.split(" ")
-            if s == len(root.child) and y[0] != "vazio":
+            if (s == len(root.child[0].child) and y[0] != "vazio"):
                 pass
             else:
-                print("Erro Sintático: Chamada à função com número de parâmetros menor que o declarado")
-                return
+                if y[0] == "vazio":
+                    return
+                print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
+                
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
         if str(root) == "indice":

@@ -18,5 +18,5 @@ inteiro principal ()
 		i := i + 1
 	até i = 100
 
-	multivet(100)
+	multivet()
 fim
