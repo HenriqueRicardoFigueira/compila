@@ -39,10 +39,12 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
         par = 0
         s = None
+        
         if str(root) == "retorna":
             if escopo == "principal" and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
                 print("Erro Semântico: Função Principal deveria retornar inteiro, mas retorna vazio.")
                 return
+        
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
             if(len(father.child) == 2):
@@ -55,9 +57,18 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             insertFunc(root.child[0].child[0], t, escopo, tipo, par)
         
         if str(root) == "chamada_funcao":
+            flag = False
+            if str(root.value) == "principal":
+                print("Erro Semântico: Chamada para a função principal não permitida")
+                return
             for simbol in t.table.simbols:
                 if simbol.lexema == root.value and str(simbol.token) == "FUNC":
                    s = simbol.par
+                   flag = True
+                   break
+            if flag == False:
+                print("Erro Semântico: Função" +root.value+ "não declarada")
+                return
             y = str(root.child[0].child[0])
             y = y.split(" ")
             if (s == len(root.child[0].child) and y[0] != "vazio"):
@@ -69,11 +80,13 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
+        
         if str(root) == "indice":
             var = father
             dim = 1
             if str(root.child[0]) == 'indice':
                 dim = 2   
+        
         if len(root.child) == 0:
             if str(father) == 'ID':
                 insertSimbol(root, t, escopo, tipo, dim, func, tam, tam2)
