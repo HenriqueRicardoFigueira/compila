@@ -13,9 +13,27 @@ def insertFunc(simbol, t, escopo, tipo, par):
     x = Simbol("FUNC", str(simbol), tipo, 0, 0, escopo, 0, 0, True, par)
     t.table.simbols.append(x)
 
+def checkId (lexema, t):
+    i = 0
+    idx = 0
+    for simbol in t.table.simbols:
+        if simbol.lexema == lexema:
+             idx = i
+             break
+        i += 1
+    return idx
+
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
+    ant = None
+    i = 0
+    cont = 0
     for node in t.table.simbols:
-        if str(simbol) == node.lexema and node.visitada == False:
+        i += 1
+        if str(simbol) == node.lexema:
+            if ant == str(simbol):
+                cont = i
+                print(ant, str(simbol))
+                break
             if node.escopo == None:
                 node.escopo = escopo
             node.tipo = tipo
@@ -24,6 +42,15 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
             node.tam[0] = tam
             node.tam[1] = tam2
             node.visitada = True
+            ant = str(simbol)
+    t.table.simbols[cont-1].escopo = escopo
+    t.table.simbols[cont-1].tipo = tipo
+    t.table.simbols[cont-1].din = dim
+    t.table.simbols[cont-1].func = func
+    t.table.simbols[cont-1].tam[0] = tam
+    t.table.simbols[cont-1].tam[1] = tam2
+    t.table.simbols[cont-1].visitada = True        
+ 
 
 def checkRules(t):
     #função principal
