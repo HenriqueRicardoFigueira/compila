@@ -3,6 +3,7 @@ flutuante: V2[100]
 
 multivet(inteiro: t)
 	inteiro: i
+	inteiro: i
 	i := 0
 	repita
 		V2[i] = V[i] * 2

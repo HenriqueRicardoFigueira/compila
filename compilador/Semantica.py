@@ -15,14 +15,22 @@ def insertFunc(simbol, t, escopo, tipo, par):
 
 def checkId (lexema, t, escopo):
     i = 0
+    ant = None
     idx = 0
     flag = False
     for simbol in t.table.simbols:
+        if simbol.lexema == ant:
+            for x in range(i, len(t.table.simbols)-1):
+                    if ant == str(t.table.simbols[x].lexema) and t.table.simbols[x].escopo == escopo :
+                        idx = x
+                        flag = True
+                        break
         if simbol.lexema == lexema and simbol.escopo == escopo:
              idx = i
              flag = True
              break
         i += 1
+        ant = str(simbol.lexema)
     if flag == True:
         return idx
     else:
@@ -32,7 +40,6 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     ant = None
     cont = 0
     j = 0
-    i = 0
     for node in t.table.simbols:
         if str(simbol) == node.lexema:
             if ant == str(simbol):
@@ -140,10 +147,9 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             tipo = root.child[0].child[0]
             if str(root.child[1].child[0].child[0]) == "ID":
                 x = checkId(root.child[1].child[0].child[0].child[0], t, escopo)
-                print(x)
                 if x != False:
                     if t.table.simbols[x].tipo:
-                        print("Aviso: Variável "+ t.table.simbols[x].lexema + "já declarada")
+                        print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
         
         if str(root) == "indice":
             var = father
