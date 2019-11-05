@@ -13,27 +13,33 @@ def insertFunc(simbol, t, escopo, tipo, par):
     x = Simbol("FUNC", str(simbol), tipo, 0, 0, escopo, 0, 0, True, par)
     t.table.simbols.append(x)
 
-def checkId (lexema, t):
+def checkId (lexema, t, escopo):
     i = 0
     idx = 0
+    flag = False
     for simbol in t.table.simbols:
-        if simbol.lexema == lexema:
+        if simbol.lexema == lexema and simbol.escopo == escopo:
              idx = i
+             flag = True
              break
         i += 1
-    return idx
+    if flag == True:
+        return idx
+    else:
+        return False
 
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     ant = None
-    i = 0
     cont = 0
+    j = 0
+    i = 0
     for node in t.table.simbols:
-        i += 1
         if str(simbol) == node.lexema:
             if ant == str(simbol):
-                cont = i
-                print(ant, str(simbol))
-                break
+                for x in range(j, len(t.table.simbols)-1):
+                    if ant == str(t.table.simbols[x].lexema):
+                        cont = x
+                        break
             if node.escopo == None:
                 node.escopo = escopo
             node.tipo = tipo
@@ -43,13 +49,14 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
             node.tam[1] = tam2
             node.visitada = True
             ant = str(simbol)
-    t.table.simbols[cont-1].escopo = escopo
-    t.table.simbols[cont-1].tipo = tipo
-    t.table.simbols[cont-1].din = dim
-    t.table.simbols[cont-1].func = func
-    t.table.simbols[cont-1].tam[0] = tam
-    t.table.simbols[cont-1].tam[1] = tam2
-    t.table.simbols[cont-1].visitada = True        
+        j += 1
+    t.table.simbols[cont].escopo = escopo
+    t.table.simbols[cont].tipo = tipo
+    t.table.simbols[cont].din = dim
+    t.table.simbols[cont].func = func
+    t.table.simbols[cont].tam[0] = tam
+    t.table.simbols[cont].tam[1] = tam2
+    t.table.simbols[cont].visitada = True        
  
 
 def checkRules(t):
@@ -71,6 +78,15 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
         par = 0
         s = None
         
+        if str(root) == "expressao":
+            if str(root.child[0].child[0].child[0]) == "ID":
+                x = checkId(str(root.child[0].child[0].child[0].child[0]), t, escopo)
+                if x == False:
+                    print("Aviso: Variável " + t.table.simbols[x].lexema + " não declarada")
+                    return
+                else:
+                    t.table.simbols[x].inicializada = True
+
         if str(root) == "retorna":
             if escopo == "principal" and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
                 print("Erro Semântico: Função Principal deveria retornar inteiro, mas retorna vazio.")
@@ -122,6 +138,12 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
+            if str(root.child[1].child[0].child[0]) == "ID":
+                x = checkId(root.child[1].child[0].child[0].child[0], t, escopo)
+                print(x)
+                if x != False:
+                    if t.table.simbols[x].tipo:
+                        print("Aviso: Variável "+ t.table.simbols[x].lexema + "já declarada")
         
         if str(root) == "indice":
             var = father
