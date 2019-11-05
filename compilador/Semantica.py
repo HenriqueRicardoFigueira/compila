@@ -40,12 +40,14 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     ant = None
     cont = 0
     j = 0
+    flag = False
     for node in t.table.simbols:
         if str(simbol) == node.lexema:
             if ant == str(simbol):
                 for x in range(j, len(t.table.simbols)-1):
                     if ant == str(t.table.simbols[x].lexema):
                         cont = x
+                        flag = True
                         break
             if node.escopo == None:
                 node.escopo = escopo
@@ -57,13 +59,14 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
             node.visitada = True
             ant = str(simbol)
         j += 1
-    t.table.simbols[cont].escopo = escopo
-    t.table.simbols[cont].tipo = tipo
-    t.table.simbols[cont].din = dim
-    t.table.simbols[cont].func = func
-    t.table.simbols[cont].tam[0] = tam
-    t.table.simbols[cont].tam[1] = tam2
-    t.table.simbols[cont].visitada = True        
+    if flag == True:
+        t.table.simbols[cont].escopo = escopo
+        t.table.simbols[cont].tipo = tipo
+        t.table.simbols[cont].din = dim
+        t.table.simbols[cont].func = func
+        t.table.simbols[cont].tam[0] = tam
+        t.table.simbols[cont].tam[1] = tam2
+        t.table.simbols[cont].visitada = True        
  
 
 def checkRules(t):
@@ -89,7 +92,7 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             if str(root.child[0].child[0].child[0]) == "ID":
                 x = checkId(str(root.child[0].child[0].child[0].child[0]), t, escopo)
                 if x == False:
-                    print("Aviso: Variável " + t.table.simbols[x].lexema + " não declarada")
+                    print("Aviso: Variável " + str(root.child[0].child[0].child[0].child[0]) + " não declarada")
                     return
                 else:
                     t.table.simbols[x].inicializada = True
