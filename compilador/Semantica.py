@@ -36,6 +36,16 @@ def checkId (lexema, t, escopo):
     else:
         return False
 
+def navega(root, t, escopo):
+    if str.__len__(str(root.value)) > 0:
+        if str(root.child[0]) == "TIPO":
+            if str(root.child[0].child[0]) == "inteiro" or str(root.child[0].child[0]) == "flutuante":
+                insertSimbol(root.value, t, escopo, root.child[0].child[0], 0, False, 0, 0)
+    for son in root.child:
+        if len(son.child) > 0:
+            navega(son, t, escopo)
+       
+
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     ant = None
     cont = 0
@@ -66,7 +76,7 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
         t.table.simbols[cont].func = func
         t.table.simbols[cont].tam[0] = tam
         t.table.simbols[cont].tam[1] = tam2
-        t.table.simbols[cont].visitada = True        
+        t.table.simbols[cont].visitada = True       
  
 
 def checkRules(t):
@@ -87,13 +97,27 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
         par = 0
         s = None
-        
+        x = None
+        if str(root) == "atribuicao":
+            typ = None
+            h = checkId(str(root.child[0].child[0].child[0]), t, escopo)
+            t.table.simbols[h].inicializada = True
+            if str(t.table.simbols[h].tipo) == "inteiro":
+                typ = "num_inteiro"
+            if str(t.table.simbols[h].tipo) == "flutuante":
+                typ = "num_flutuante"
+            util = root.child[1].child[0].child[0].child[0].child[0].child[0].child[0]
+            if str(util) == "num_inteiro" or str(util) == "num_flutuante":
+                typ2 = str(root.child[1].child[0].child[0].child[0].child[0].child[0].child[0])
+                if typ != typ2:
+                    print("Aviso: Atribuição de tipos distintos.")
+                
+
         if str(root) == "expressao":
             if str(root.child[0].child[0].child[0]) == "ID":
                 x = checkId(str(root.child[0].child[0].child[0].child[0]), t, escopo)
                 if x == False:
                     print("Aviso: Variável " + str(root.child[0].child[0].child[0].child[0]) + " não declarada")
-                    return
                 else:
                     t.table.simbols[x].inicializada = True
 
@@ -111,6 +135,12 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 x = x.split(" ")
                 if str(x[0]) != "vazio":
                     par = len(root.child[2].child)
+                    if par == 1:
+                        tei = root.child[2].child[0].value
+                        tp = root.child[2].child[0].child[0].child[0]
+                        insertSimbol(tei, t, escopo, tp, 0, False, 0, 0)
+                if len(root.child[2].child) > 1:
+                   navega(root.child[2], t, escopo)            
             insertFunc(root.child[0].child[0], t, escopo, tipo, par)
         
         if str(root) == "chamada_funcao":
@@ -132,8 +162,9 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 return
             y = str(root.child[0].child[0])
             y = y.split(" ")
-            
-            if s == 1:
+            if s == 0:
+                t.table.simbols[idx].inicializada = True
+            if s == 1 :
                 if y[0] != "vazio":
                     t.table.simbols[idx].inicializada = True
                     pass

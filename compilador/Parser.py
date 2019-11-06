@@ -14,7 +14,7 @@ from Lexer import Simbol
 h = 0
 class Tree:
 
-    def __init__(self, type_node, child=[], value=" ", line=""):
+    def __init__(self, type_node, child=[], value="", line=""):
         self.type = type_node
         self.child = child
         self.value = value
@@ -448,9 +448,9 @@ class Parser:
 def tree_view(node, strson, father, w, i, j):
     if node != None:
         i = i + 1
-        father = str(node) + " " + str(i-1) + " "  # + str(j-1)
+        father = str(node) + " " + str(i-1) + " " +str(j-1)
         for son in node.child:
-            strson = str(son) + " " + str(i) + " "  # + str(j)
+            strson = str(son) + " " + str(i) + " "   + str(j)
             w.edge(father, strson)
             j = j + 1
             tree_view(son, strson, father, w, i, j)
