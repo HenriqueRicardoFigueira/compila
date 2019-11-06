@@ -13,6 +13,13 @@ def insertFunc(simbol, t, escopo, tipo, par):
     x = Simbol("FUNC", str(simbol), tipo, 0, 0, escopo, 0, 0, True, par)
     t.table.simbols.append(x)
 
+def searchEscopo (lexema, t):
+    escopo = []
+    for simbol in t.table.simbols:
+        if simbol.lexema == str(lexema):
+                escopo.append(simbol.escopo)
+    return escopo
+
 def checkId (lexema, t, escopo):
     i = 0
     ant = None
@@ -36,6 +43,37 @@ def checkId (lexema, t, escopo):
     else:
         return False
 
+def expressRight(root, t, escopo):
+    flag = False
+    if str(root) == "expressao_simples":
+        pass
+        #if len(root.child) == 3:
+        #print(root.child[1].value)
+    if str(root) == "var":
+        if str(root.child[0]) != "ID":
+            x = searchEscopo(root.child[0], t)
+        else:
+            x = searchEscopo(root.child[0].child[0], t)
+        if len(x) == 1:
+            esc = x[0]
+        else:
+            z = -1
+            for v in x:
+                z += 1
+                if v == escopo:
+                    break
+            esc = x[z]
+        
+        i = checkId(str(root.child[0]), t, esc)
+        tp = t.table.simbols[i].tipo
+        print(t.table.simbols[i].lexema, t.table.simbols[i].escopo)
+
+        if str(root.child[0].child[0]) == "indice":
+            flag = True
+    if len(root.child) > 0:
+        for s in root.child:
+            expressRight(s, t, escopo)
+
 def navega(root, t, escopo):
     if str.__len__(str(root.value)) > 0:
         if str(root.child[0]) == "TIPO":
@@ -45,7 +83,6 @@ def navega(root, t, escopo):
         if len(son.child) > 0:
             navega(son, t, escopo)
        
-
 def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
     ant = None
     cont = 0
@@ -78,7 +115,6 @@ def insertSimbol(simbol, t, escopo, tipo, dim, func, tam, tam2):
         t.table.simbols[cont].tam[1] = tam2
         t.table.simbols[cont].visitada = True       
  
-
 def checkRules(t):
     #função principal
     princ = False
@@ -98,6 +134,8 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
         par = 0
         s = None
         x = None
+
+
         if str(root) == "atribuicao":
             typ = None
             h = checkId(str(root.child[0].child[0].child[0]), t, escopo)
@@ -114,12 +152,14 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 
 
         if str(root) == "expressao":
-            if str(root.child[0].child[0].child[0]) == "ID":
-                x = checkId(str(root.child[0].child[0].child[0].child[0]), t, escopo)
-                if x == False:
-                    print("Aviso: Variável " + str(root.child[0].child[0].child[0].child[0]) + " não declarada")
-                else:
-                    t.table.simbols[x].inicializada = True
+            #if str(root.child[0]) == "expressao_simples":
+            expressRight(root.child[0], t, escopo)
+            #if str(root.child[0].child[0].child[0]) == "ID":
+            #    x = checkId(str(root.child[0].child[0].child[0].child[0]), t, escopo)
+            #    if x == False:
+            #        print("Aviso: Variável " + str(root.child[0].child[0].child[0].child[0]) + " não declarada")
+            #    else:
+            #        t.table.simbols[x].inicializada = True
 
         if str(root) == "retorna":
             if escopo == "principal" and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
