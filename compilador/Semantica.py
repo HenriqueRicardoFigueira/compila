@@ -1,7 +1,10 @@
 from Lexer import Lexer, Simbol
 from Parser import Parser
 
-
+class aux:
+    def __init__(self):
+        self.h = []
+        
 class Semantica:
     def __init__(self, code):
         self.lex = Lexer()
@@ -44,30 +47,49 @@ def checkId(lexema, t, escopo):
     else:
         return False
 
-def support(root, t):
+def support(root, t, father, aux):
     if root:
+       #print(root)
         if len(root.child) == 0:
-            return root
-        for x in root.child:
-            z = support(x, t)
-            if z != None:
-                return z 
+            q = str(root).split("_")
+            if q[0] != "operador":
+                aux.h.append(root)
+        if len(root.child) > 0:
+            for x in root.child:
+                support(x, t, root, aux)
+                #if len(z.child) == 0:
+                #    return 
+               
+#def expressLeft(root, t, escopo, father):
 
 def expressRight(root, t, escopo, father):
-        left = support(root.child[0], t)
-        right = support(root.child[1], t)
-        j = checkId(str(left), t, escopo)
-        a = t.table.simbols[j]
-        z = str(right).split("_")  
-        if z[0] == "num":
-            if str(a.lexema) == str(left) and str(a.tipo) == z[1]:
-                a.inicializada = True
-                print(a.lexema, left, right.value, z[1])
-            else:
-                print("Aviso: Atribuição de tipos distintos na variável " + a.lexema)
+        vetor = ""
+        posicao = ""
+        a = aux()
+        support(root,t,root,a)
+        if len(a.h) == 2:
+            left = a.h[0]
+            right = a.h[1]
+            j = checkId(str(left), t, escopo)
+            a = t.table.simbols[j]
+            z = str(right).split("_")
+            if z[0] == "num":
+                if str(a.lexema) == str(left) and str(a.tipo) == z[1]:
+                    a.inicializada = True
+                    print(a.lexema, left, right.value, z[1])
+                else:
+                    print("Aviso: Atribuição de tipos distintos na variável " + a.lexema)  
+        elif len(a.h) == 3:
+            left = a.h[0]
+            right = a.h[1]
+            middle = a.h[2]
         else:
-            print(left, right)
+            pass
+        #print(left, right)        
         
+       
+        
+        #
 
 def navega(root, t, escopo):
     if str.__len__(str(root.value)) > 0:
