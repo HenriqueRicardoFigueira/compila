@@ -1,6 +1,7 @@
 from Lexer import Lexer, Simbol
 from Parser import Parser
 
+
 class Semantica:
     def __init__(self, code):
         self.lex = Lexer()
@@ -13,14 +14,14 @@ def insertFunc(simbol, t, escopo, tipo, par):
     x = Simbol("FUNC", str(simbol), tipo, 0, 0, escopo, 0, 0, True, par)
     t.table.simbols.append(x)
 
-def searchEscopo (lexema, t):
+def searchEscopo(lexema, t):
     escopo = []
     for simbol in t.table.simbols:
         if simbol.lexema == str(lexema):
                 escopo.append(simbol.escopo)
     return escopo
 
-def checkId (lexema, t, escopo):
+def checkId(lexema, t, escopo):
     i = 0
     ant = None
     idx = 0
@@ -43,36 +44,30 @@ def checkId (lexema, t, escopo):
     else:
         return False
 
-def expressRight(root, t, escopo):
-    flag = False
-    if str(root) == "expressao_simples":
-        pass
-        #if len(root.child) == 3:
-        #print(root.child[1].value)
-    if str(root) == "var":
-        if str(root.child[0]) != "ID":
-            x = searchEscopo(root.child[0], t)
-        else:
-            x = searchEscopo(root.child[0].child[0], t)
-        if len(x) == 1:
-            esc = x[0]
-        else:
-            z = -1
-            for v in x:
-                z += 1
-                if v == escopo:
-                    break
-            esc = x[z]
-        
-        i = checkId(str(root.child[0]), t, esc)
-        tp = t.table.simbols[i].tipo
-        print(t.table.simbols[i].lexema, t.table.simbols[i].escopo)
+def support(root, t):
+    if root:
+        if len(root.child) == 0:
+            return root
+        for x in root.child:
+            z = support(x, t)
+            if z != None:
+                return z 
 
-        if str(root.child[0].child[0]) == "indice":
-            flag = True
-    if len(root.child) > 0:
-        for s in root.child:
-            expressRight(s, t, escopo)
+def expressRight(root, t, escopo, father):
+        left = support(root.child[0], t)
+        right = support(root.child[1], t)
+        j = checkId(str(left), t, escopo)
+        a = t.table.simbols[j]
+        z = str(right).split("_")  
+        if z[0] == "num":
+            if str(a.lexema) == str(left) and str(a.tipo) == z[1]:
+                a.inicializada = True
+                print(a.lexema, left, right.value, z[1])
+            else:
+                print("Aviso: Atribuição de tipos distintos na variável " + a.lexema)
+        else:
+            print(left, right)
+        
 
 def navega(root, t, escopo):
     if str.__len__(str(root.value)) > 0:
@@ -134,32 +129,9 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
         par = 0
         s = None
         x = None
-
-
+    
         if str(root) == "atribuicao":
-            typ = None
-            h = checkId(str(root.child[0].child[0].child[0]), t, escopo)
-            t.table.simbols[h].inicializada = True
-            if str(t.table.simbols[h].tipo) == "inteiro":
-                typ = "num_inteiro"
-            if str(t.table.simbols[h].tipo) == "flutuante":
-                typ = "num_flutuante"
-            util = root.child[1].child[0].child[0].child[0].child[0].child[0].child[0]
-            if str(util) == "num_inteiro" or str(util) == "num_flutuante":
-                typ2 = str(root.child[1].child[0].child[0].child[0].child[0].child[0].child[0])
-                if typ != typ2:
-                    print("Aviso: Atribuição de tipos distintos.")
-                
-
-        if str(root) == "expressao":
-            #if str(root.child[0]) == "expressao_simples":
-            expressRight(root.child[0], t, escopo)
-            #if str(root.child[0].child[0].child[0]) == "ID":
-            #    x = checkId(str(root.child[0].child[0].child[0].child[0]), t, escopo)
-            #    if x == False:
-            #        print("Aviso: Variável " + str(root.child[0].child[0].child[0].child[0]) + " não declarada")
-            #    else:
-            #        t.table.simbols[x].inicializada = True
+            expressRight(root, t, escopo, father)
 
         if str(root) == "retorna":
             if escopo == "principal" and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
