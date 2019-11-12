@@ -49,7 +49,6 @@ def checkId(lexema, t, escopo):
 
 def support(root, t, father, aux):
     if root:
-       #print(root)
         if len(root.child) == 0:
             q = str(root).split("_")
             if q[0] != "operador":
@@ -57,39 +56,71 @@ def support(root, t, father, aux):
         if len(root.child) > 0:
             for x in root.child:
                 support(x, t, root, aux)
-                #if len(z.child) == 0:
-                #    return 
-               
-#def expressLeft(root, t, escopo, father):
 
 def expressRight(root, t, escopo, father):
-        vetor = ""
-        posicao = ""
-        a = aux()
-        support(root,t,root,a)
-        if len(a.h) == 2:
-            left = a.h[0]
-            right = a.h[1]
-            j = checkId(str(left), t, escopo)
-            a = t.table.simbols[j]
+    a = aux()
+    support(root,t,root,a)
+    if len(a.h) == 2:
+        left = a.h[0]
+        right = a.h[1]
+        idleft = checkId(str(left), t, escopo)
+        idRight = checkId(str(right), t, escopo)
+        
+        if idleft == False:
+            idleft = checkId(str(left), t, "global")
+        
+        if idRight == False:
+            idRight = checkId(str(right), t, "global")
+        
+        a = t.table.simbols[idleft]
+        
+        if idRight != False:
+            variavelLeft = t.table.simbols[idRight]
+            a.inicializada = True
+            if a.tipo != variavelLeft.tipo:
+                print("Aviso: Coerção implícita do valor de " + a.lexema)
+        else:
             z = str(right).split("_")
             if z[0] == "num":
-                if str(a.lexema) == str(left) and str(a.tipo) == z[1]:
+                if str(a.lexema) == str(left):
                     a.inicializada = True
-                    print(a.lexema, left, right.value, z[1])
+                if str(a.tipo) == z[1]:
+                    print("Aviso: Coerção implícita do valor de " + a.lexema)  
+
+    elif len(a.h) == 3:
+        left = a.h[0]
+        middle = a.h[1]
+        right = a.h[2]
+        idleft = checkId(str(left), t, escopo)
+        m = str(middle).split("_")
+        o = checkId(str(middle), t, escopo)
+        g = checkId(str(right), t, escopo)
+        b = t.table.simbols[g]
+        r = t.table.simbols[o]
+        a = t.table.simbols[idleft]
+        p = str(right).split("_")
+        if o == False:
+            if p[0] ==  "num" and m[0] == "num":
+                if m[1] == p[1]:
+                    if str(a.tipo) == m[1]:
+                        a.inicializada = True
+                    else:
+                        print("Aviso: Coerção implícita do valor de " + a.lexema)
+        elif g != False:
+            if str(b.tipo) == str(r.tipo):
+                if str(b.tipo) == str(a.tipo):
+                    a.inicializada = True
                 else:
-                    print("Aviso: Atribuição de tipos distintos na variável " + a.lexema)  
-        elif len(a.h) == 3:
-            left = a.h[0]
-            right = a.h[1]
-            middle = a.h[2]
+                    print("Aviso: Coerção implícita do valor de " + a.lexema)
+            else:
+                print("Aviso: Coerção implícita do valor de " + a.lexema)
+
         else:
-            pass
-        #print(left, right)        
-        
-       
-        
-        #
+            if p[0] == "num":
+                if p[1] == str(a.tipo) and str(a.tipo) == str(r.tipo):
+                   a.inicializada = True
+                else:
+                    print("Aviso: Atribuição de tipos diferentes")      
 
 def navega(root, t, escopo):
     if str.__len__(str(root.value)) > 0:
@@ -145,7 +176,29 @@ def checkRules(t):
     if princ == False:
         print("Erro Sintático: Função principal não declarada.")
         return      
-            
+
+def retPrincipal(root):
+    if str(root) == "retorna":
+        x = leaf(root)
+        if str(x) != "num_inteiro":
+            print("Erro Semântico: Função principal deveria retornar inteiro, mas retorna vazio")
+            return True
+    if len(root.child) > 0:
+        for i in root.child:
+            retPrincipal(i)
+    return False
+
+def leaf(root):
+    if len(root.child) == 0:
+        return root
+    else:
+        for x in root.child:
+            h = leaf(x)
+            if h:
+                return h
+            else:
+                leaf(x)
+
 def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
         par = 0
@@ -154,14 +207,34 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     
         if str(root) == "atribuicao":
             expressRight(root, t, escopo, father)
-
+        
         if str(root) == "retorna":
-            if escopo == "principal" and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
-                print("Erro Semântico: Função Principal deveria retornar inteiro, mas retorna vazio.")
-                return
+        
+            funcao = checkId(str(escopo), t, escopo)
+            folha = leaf(root)
+            variavel = checkId(str(folha), t, escopo)
+            
+            if variavel == False:
+                print("Erro Semântico: Variável "+ str(folha) + " não declarada.")
+            
+            retorno = checkId(str(variavel), t, escopo)
+            
+            if funcao != False:
+                if t.table.simbols[funcao].tipo == t.table.simbols[retorno].tipo:
+                    pass
+                else:
+                    print("Aviso: Coerção implícita do valor retornado por "+ str(escopo))
+                #print(root.child[0])   
+                #and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
+                #print("Erro Semântico: Função Principal deveria retornar inteiro, mas retorna vazio.")
+                #return
         
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
+            if str(escopo) == "principal":
+               flagRet = retPrincipal(root)
+               if flagRet == False:
+                   print("Erro: Função principal deveria retornar inteiro, mas retorna vazio")
             if(len(father.child) == 2):
                 tipo = father.child[0].child[0]
             if str(root.child[2]) == "lista_parametros":
@@ -213,31 +286,40 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
+            
+            if str(root.child[1].child[0].child[0].child[0]) == "indice":
+                tipoIndice = leaf(root.child[1])
+                
+                if str(tipoIndice) != "num_inteiro":
+                    print("Erro Semântico: índice de array " + str(root.child[1].child[0].child[0]) + " não inteiro")
+                else:
+                    insertSimbol(root.child[1].child[0].child[0], t, escopo, tipo, 1, func, tipoIndice.value, tam2)
+            
             if str(root.child[1].child[0].child[0]) == "ID":
                 x = checkId(root.child[1].child[0].child[0].child[0], t, escopo)
                 if x != False:
                     if t.table.simbols[x].tipo:
                         print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
         
-        if str(root) == "indice":
-            var = father
-            dim = 1
-            if str(root.child[0]) == 'indice':
-                dim = 2   
-        
-        if len(root.child) == 0:
-            if str(father) == 'ID':
-                insertSimbol(root, t, escopo, tipo, dim, func, tam, tam2)
-            
-            if str(root) == 'num_inteiro' or str(root) == 'num_flutuante':
-                if dim == 2:
-                    tam2 = root.value
-                    tam = tamaux
-                else:
-                    tam = root.value
-                    tamaux = root.value
-                insertSimbol(var, t, escopo, tipo, dim, func, tam, tam2)
-       
+        #if str(root) == "indice":
+        #    var = father
+        #    dim = 1
+        #    if str(root.child[0]) == 'indice':
+        #        dim = 2   
+        #
+        #if len(root.child) == 0:
+        #    if str(father) == 'ID':
+        #        insertSimbol(root, t, escopo, tipo, dim, func, tam, tam2)
+        #    
+        #    if str(root) == 'num_inteiro' or str(root) == 'num_flutuante':
+        #        if dim == 2:
+        #            tam2 = root.value
+        #            tam = tamaux
+        #        else:
+        #            tam = root.value
+        #            tamaux = root.value
+        #        insertSimbol(var, t, escopo, tipo, dim, func, tam, tam2)
+    #
         father = root
         for son in root.child:
             prefix(son, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux)
