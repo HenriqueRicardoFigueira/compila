@@ -50,9 +50,7 @@ def checkId(lexema, t, escopo):
 def support(root, t, father, aux):
     if root:
         if len(root.child) == 0:
-            q = str(root).split("_")
-            if q[0] != "operador":
-                aux.h.append(root)
+            aux.h.append(root)
         if len(root.child) > 0:
             for x in root.child:
                 support(x, t, root, aux)
@@ -60,6 +58,7 @@ def support(root, t, father, aux):
 def expressRight(root, t, escopo, father):
     a = aux()
     support(root,t,root,a)
+
     if len(a.h) == 2:
         left = a.h[0]
         right = a.h[1]
@@ -73,7 +72,6 @@ def expressRight(root, t, escopo, father):
             idRight = checkId(str(right), t, "global")
         
         a = t.table.simbols[idleft]
-        
         if idRight != False:
             variavelLeft = t.table.simbols[idRight]
             a.inicializada = True
@@ -84,7 +82,7 @@ def expressRight(root, t, escopo, father):
             if z[0] == "num":
                 if str(a.lexema) == str(left):
                     a.inicializada = True
-                if str(a.tipo) == z[1]:
+                if str(a.tipo) != z[1]:
                     print("Aviso: Coerção implícita do valor de " + a.lexema)  
 
     elif len(a.h) == 3:
@@ -102,9 +100,8 @@ def expressRight(root, t, escopo, father):
         if o == False:
             if p[0] ==  "num" and m[0] == "num":
                 if m[1] == p[1]:
-                    if str(a.tipo) == m[1]:
-                        a.inicializada = True
-                    else:
+                    a.inicializada = True
+                    if str(a.tipo) != m[1]:
                         print("Aviso: Coerção implícita do valor de " + a.lexema)
         elif g != False:
             if str(b.tipo) == str(r.tipo):
@@ -127,6 +124,8 @@ def navega(root, t, escopo):
         if str(root.child[0]) == "TIPO":
             if str(root.child[0].child[0]) == "inteiro" or str(root.child[0].child[0]) == "flutuante":
                 insertSimbol(root.value, t, escopo, root.child[0].child[0], 0, False, 0, 0)
+                id = checkId(str(root.value), t, escopo)
+                t.table.simbols[id].inicializada = True
     for son in root.child:
         if len(son.child) > 0:
             navega(son, t, escopo)
@@ -172,7 +171,7 @@ def checkRules(t):
         if simbol.lexema == "principal" and simbol.token == "FUNC":
             princ = True
         if simbol.token == "ID" and simbol.inicializada == False:
-            print("Aviso: Variável "+ simbol.lexema + " declarada mas não ultilizada")            
+            print("Aviso: Variável "+ simbol.lexema + " declarada, mas não ultilizada")            
     if princ == False:
         print("Erro Sintático: Função principal não declarada.")
         return      
@@ -207,27 +206,40 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     
         if str(root) == "atribuicao":
             expressRight(root, t, escopo, father)
+            pass
+            
         
         if str(root) == "retorna":
-        
             funcao = checkId(str(escopo), t, escopo)
             folha = leaf(root)
             variavel = checkId(str(folha), t, escopo)
-            
-            if variavel == False:
-                print("Erro Semântico: Variável "+ str(folha) + " não declarada.")
-            
+            filho = root.child[0]
             retorno = checkId(str(variavel), t, escopo)
+            j = 0
+            expressao = aux()
+            support(root, t, root, expressao)
+            for i in expressao.h:
+                z = str(i).split("_")
+                j += 1
+                if z[0] == "operador":
+                    break
+            k = str(expressao.h[j-1]).split("_")
+
+            if k[0] == "operador":
+                idLeft = checkId(str(expressao.h[0]),t, escopo)
+                idRight = checkId(str(expressao.h[2]),t, escopo)
+                if str(t.table.simbols[idLeft].tipo) !=  str(t.table.simbols[idRight].tipo):
+                    print("Aviso: Coerção implícita do valor retornado por "+ str(escopo))
             
-            if funcao != False:
+            #if variavel == False:
+            #    print("Erro Semântico: Variável "+ str(folha) + " não declarada.")
+            #    pass
+            
+            else:
                 if t.table.simbols[funcao].tipo == t.table.simbols[retorno].tipo:
                     pass
                 else:
                     print("Aviso: Coerção implícita do valor retornado por "+ str(escopo))
-                #print(root.child[0])   
-                #and root.child[0].child[0].child[0].child[0].child[0].child[0].child[0] != "num_inteiro":
-                #print("Erro Semântico: Função Principal deveria retornar inteiro, mas retorna vazio.")
-                #return
         
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
@@ -246,6 +258,8 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                         tei = root.child[2].child[0].value
                         tp = root.child[2].child[0].child[0].child[0]
                         insertSimbol(tei, t, escopo, tp, 0, False, 0, 0)
+                        id = checkId(tei, t, escopo)
+                        t.table.simbols[id].inicializada = True
                 if len(root.child[2].child) > 1:
                    navega(root.child[2], t, escopo)            
             insertFunc(root.child[0].child[0], t, escopo, tipo, par)
@@ -272,16 +286,12 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             if s == 0:
                 t.table.simbols[idx].inicializada = True
             if s == 1 :
+                t.table.simbols[idx].inicializada = True
                 if y[0] != "vazio":
-                    t.table.simbols[idx].inicializada = True
-                    pass
-                else:
                     print("Erro Semântico: Chamada à função com número de parâmetros menor que o declarado")
             if s > 1:
-                if s == len(root.child[0].child):
-                    t.table.simbols[idx].inicializada = True
-                    pass
-                else:
+                t.table.simbols[idx].inicializada = True
+                if s != len(root.child[0].child):
                     print("Erro Semânctico: Chamada à função com número de parâmetros menor que o declarado")
                 
         if str(root) == "declaracao_variaveis":
@@ -295,31 +305,17 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 else:
                     insertSimbol(root.child[1].child[0].child[0], t, escopo, tipo, 1, func, tipoIndice.value, tam2)
             
+            var = leaf(root.child[1])
+            
+            if str(var) != "num_inteiro" or str(var) != "num_flutuante":
+                insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
+            
             if str(root.child[1].child[0].child[0]) == "ID":
                 x = checkId(root.child[1].child[0].child[0].child[0], t, escopo)
                 if x != False:
                     if t.table.simbols[x].tipo:
                         print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
         
-        #if str(root) == "indice":
-        #    var = father
-        #    dim = 1
-        #    if str(root.child[0]) == 'indice':
-        #        dim = 2   
-        #
-        #if len(root.child) == 0:
-        #    if str(father) == 'ID':
-        #        insertSimbol(root, t, escopo, tipo, dim, func, tam, tam2)
-        #    
-        #    if str(root) == 'num_inteiro' or str(root) == 'num_flutuante':
-        #        if dim == 2:
-        #            tam2 = root.value
-        #            tam = tamaux
-        #        else:
-        #            tam = root.value
-        #            tamaux = root.value
-        #        insertSimbol(var, t, escopo, tipo, dim, func, tam, tam2)
-    #
         father = root
         for son in root.child:
             prefix(son, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux)
