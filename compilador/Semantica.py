@@ -49,6 +49,9 @@ def checkId(lexema, t, escopo):
 
 def support(root, t, father, aux):
     if root:
+        if str(root) == "chamada_funcao":
+            aux.h.append(root)
+            return
         if len(root.child) == 0:
             aux.h.append(root)
         if len(root.child) > 0:
@@ -57,68 +60,38 @@ def support(root, t, father, aux):
 
 def expressRight(root, t, escopo, father):
     a = aux()
+    tiposExp = aux()
     support(root,t,root,a)
-
-    if len(a.h) == 2:
-        left = a.h[0]
-        right = a.h[1]
-        idleft = checkId(str(left), t, escopo)
-        idRight = checkId(str(right), t, escopo)
-        
-        if idleft == False:
-            idleft = checkId(str(left), t, "global")
-        
-        if idRight == False:
-            idRight = checkId(str(right), t, "global")
-        
-        a = t.table.simbols[idleft]
-        if idRight != False:
-            variavelLeft = t.table.simbols[idRight]
-            a.inicializada = True
-            if a.tipo != variavelLeft.tipo:
-                print("Aviso: Coerção implícita do valor de " + a.lexema)
+    for z in a.h:
+        y = str(z).split("_")
+        if y[0] == "chamada":
+            for o in t.table.simbols:
+                if str(z.value) == str(o.lexema) and str(o.token) == "FUNC":
+                    tiposExp.h.append(o.tipo)
+                    break
+            break
+        if y[0] == "num":
+            tiposExp.h.append(y[1])
+            break 
+        if y[0] == "operador":
+            pass
         else:
-            z = str(right).split("_")
-            if z[0] == "num":
-                if str(a.lexema) == str(left):
-                    a.inicializada = True
-                if str(a.tipo) != z[1]:
-                    print("Aviso: Coerção implícita do valor de " + a.lexema)  
-
-    elif len(a.h) == 3:
-        left = a.h[0]
-        middle = a.h[1]
-        right = a.h[2]
-        idleft = checkId(str(left), t, escopo)
-        m = str(middle).split("_")
-        o = checkId(str(middle), t, escopo)
-        g = checkId(str(right), t, escopo)
-        b = t.table.simbols[g]
-        r = t.table.simbols[o]
-        a = t.table.simbols[idleft]
-        p = str(right).split("_")
-        if o == False:
-            if p[0] ==  "num" and m[0] == "num":
-                if m[1] == p[1]:
-                    a.inicializada = True
-                    if str(a.tipo) != m[1]:
-                        print("Aviso: Coerção implícita do valor de " + a.lexema)
-        elif g != False:
-            if str(b.tipo) == str(r.tipo):
-                if str(b.tipo) == str(a.tipo):
-                    a.inicializada = True
-                else:
-                    print("Aviso: Coerção implícita do valor de " + a.lexema)
+            x = checkId(str(z), t, escopo)
+            if type(x) != int:
+                x = checkId(str(z), t, "global")
+            if type(x) == int:
+                tiposExp.h.append(t.table.simbols[x].tipo)
+                if str(a.h[0]) == str(t.table.simbols[x].lexema):
+                    right = t.table.simbols[x]
+                    if right.inicializada == False:
+                        right.inicializada = True    
             else:
-                print("Aviso: Coerção implícita do valor de " + a.lexema)
-
-        else:
-            if p[0] == "num":
-                if p[1] == str(a.tipo) and str(a.tipo) == str(r.tipo):
-                   a.inicializada = True
-                else:
-                    print("Aviso: Atribuição de tipos diferentes")      
-
+                print("Erro: Variável "+ str(z) + " não declarada.")
+    
+    for l in tiposExp.h:
+        if str(tiposExp.h[0]) != str(l):
+            print("Aviso: Atribuição de tipos distintos " + str(right.lexema)+ " " + str(right.tipo)) 
+     
 def navega(root, t, escopo):
     if str.__len__(str(root.value)) > 0:
         if str(root.child[0]) == "TIPO":
@@ -197,6 +170,7 @@ def leaf(root):
                 return h
             else:
                 leaf(x)
+                
 def auxLeaf(root):
     if len(root.child) == 0:
         return root
@@ -212,25 +186,29 @@ def auxVar(root, t, tipo, escopo, func, tam2, tam):
 
 def addVar(root, t, tipo, escopo, func, tam2, tam):
     if str(root.child[0].child[0].child[0]) == "indice":
-        tipoIndice = leaf(root.child[1])
+        tipoIndice = leaf(root.child[0])
         if str(tipoIndice) != "num_inteiro":
             print("Erro Semântico: índice de array " + str(root.child[0].child[0]) + " não inteiro")
         else:
             insertSimbol(root.child[0].child[0], t, escopo, tipo, 1, func, tipoIndice.value, tam2)
-    if str(root.child[0]) == "var":    
+    if str(root.child[0]) == "var":  
         var = leaf(root.child[0])
     else:
         if len(root.child) > 0:
             var = auxLeaf(root.child[1])
     if str(var) != "num_inteiro" or str(var) != "num_flutuante":
-        x = checkId(root.child[0].child[0].child[0], t, escopo)
-        if x == False:
-            insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
-        elif str(t.table.simbols[x].escopo) == str(escopo):
-            print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
-            #del t.table.simbols[x]
+        x = checkId(str(var), t, escopo)
+        if type(x) == int:
+            if str(t.table.simbols[x].lexema) == str(var):
+                if str(t.table.simbols[x].escopo) == str(escopo):
+                    print(var, escopo)
+                    print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
+                    del t.table.simbols[x]
+            else:
+                insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
         else:
             insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
+            
 
 def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
@@ -247,8 +225,9 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             funcao = checkId(str(escopo), t, escopo)
             folha = leaf(root)
             variavel = checkId(str(folha), t, escopo)
-            filho = root.child[0]
-            retorno = checkId(str(variavel), t, escopo)
+            if variavel == False:
+                variavel = checkId(str(folha), t, "global")
+              
             j = 0
             expressao = aux()
             support(root, t, root, expressao)
@@ -265,16 +244,17 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
                 if str(t.table.simbols[idLeft].tipo) !=  str(t.table.simbols[idRight].tipo):
                     print("Aviso: Coerção implícita do valor retornado por "+ str(escopo))
             
-            #if variavel == False:
-            #    print("Erro Semântico: Variável "+ str(folha) + " não declarada.")
-            #    pass
-            
             else:
-                if t.table.simbols[funcao].tipo == t.table.simbols[retorno].tipo:
-                    pass
+                if type(variavel) == int:
+                    if t.table.simbols[funcao].tipo == t.table.simbols[variavel].tipo:
+                        pass
+                    else:
+                        print("Aviso: Coerção implícita do valor retornado por "+ str(escopo))
+                
                 else:
                     print("Aviso: Coerção implícita do valor retornado por "+ str(escopo))
-        
+                    print("Variável " + str(folha) + " não declarada.")
+
         if str(root) == "cabecalho":
             escopo = root.child[0].child[0]
             if str(escopo) == "principal":
