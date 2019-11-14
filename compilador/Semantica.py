@@ -197,6 +197,40 @@ def leaf(root):
                 return h
             else:
                 leaf(x)
+def auxLeaf(root):
+    if len(root.child) == 0:
+        return root
+    else:
+        return auxLeaf(root.child[0])
+
+def auxVar(root, t, tipo, escopo, func, tam2, tam):
+    if str(root) == "lista_variaveis":
+        addVar(root, t, tipo, escopo, func, tam2, tam)
+    if len(root.child) > 1:
+        print(root.child[1].child[0].child[0], escopo, tipo)
+        auxVar(root.child[1], t, tipo, escopo, func, tam, tam2)
+
+def addVar(root, t, tipo, escopo, func, tam2, tam):
+    if str(root.child[0].child[0].child[0]) == "indice":
+        tipoIndice = leaf(root.child[1])
+        if str(tipoIndice) != "num_inteiro":
+            print("Erro Semântico: índice de array " + str(root.child[0].child[0]) + " não inteiro")
+        else:
+            insertSimbol(root.child[0].child[0], t, escopo, tipo, 1, func, tipoIndice.value, tam2)
+    if str(root.child[0]) == "var":    
+        var = leaf(root.child[0])
+    else:
+        if len(root.child) > 0:
+            var = auxLeaf(root.child[1])
+    if str(var) != "num_inteiro" or str(var) != "num_flutuante":
+        x = checkId(root.child[0].child[0].child[0], t, escopo)
+        if x == False:
+            insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
+        elif str(t.table.simbols[x].escopo) == str(escopo):
+            print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
+            #del t.table.simbols[x]
+        else:
+            insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
 
 def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
     if root:
@@ -297,24 +331,9 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
         if str(root) == "declaracao_variaveis":
             tipo = root.child[0].child[0]
             
-            if str(root.child[1].child[0].child[0].child[0]) == "indice":
-                tipoIndice = leaf(root.child[1])
-                
-                if str(tipoIndice) != "num_inteiro":
-                    print("Erro Semântico: índice de array " + str(root.child[1].child[0].child[0]) + " não inteiro")
-                else:
-                    insertSimbol(root.child[1].child[0].child[0], t, escopo, tipo, 1, func, tipoIndice.value, tam2)
+        if str(root) == "lista_variaveis":
+            auxVar(root, t, tipo, escopo, func, tam2, tam)
             
-            var = leaf(root.child[1])
-            
-            if str(var) != "num_inteiro" or str(var) != "num_flutuante":
-                insertSimbol(var, t, escopo, tipo, 0, func, tam, tam2)
-            
-            if str(root.child[1].child[0].child[0]) == "ID":
-                x = checkId(root.child[1].child[0].child[0].child[0], t, escopo)
-                if x != False:
-                    if t.table.simbols[x].tipo:
-                        print("Aviso: Variável "+ t.table.simbols[x].lexema + " já declarada")
         
         father = root
         for son in root.child:
