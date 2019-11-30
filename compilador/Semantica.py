@@ -1,5 +1,6 @@
 from Lexer import Lexer, Simbol
-from Parser import Parser
+from Parser import Parser, Tree
+from graphviz import Digraph
 
 class aux:
     def __init__(self):
@@ -319,7 +320,35 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
         for son in root.child:
             prefix(son, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux)
         
-        
+
+def podaTree(root, father, grandpa):
+    nameBreak = str(root).split("_")
+    if str(root) == "declaracao_variaveis":
+        father.child[0] = leaf(root.child[1])
+    if str(root) == "atribuicao":
+        root.child[0] = leaf(root.child[0])
+        root.child[1] = root.child[1].child[0].child[0]
+    if str(nameBreak[0]) == "expressao":
+        if len(root.child) == 3:
+            print(root)
+            root.child[0] = leaf(root.child[0])
+            root.child[1] = Tree(root.child[1].value)
+            root.child[2] = leaf(root.child[2])
+    for son in root.child:
+        podaTree(son, root, father)
+            
+
+
+def tree_view(node, strson, father, w, i, j):
+    if node != None:
+        i = i + 1
+        father = str(node) + " " + str(i-1) + " " +str(j-1)
+        for son in node.child:
+            strson = str(son) + " " + str(i) + " "   + str(j)
+            w.edge(father, strson)
+            j = j + 1
+            tree_view(son, strson, father, w, i, j)
+
 
 if __name__ == '__main__':
     from sys import argv, exit
@@ -328,4 +357,9 @@ if __name__ == '__main__':
     t = Semantica(f.read())
     prefix(t.parser.ast, t, "global", "", "", False, 0, 0, None,0, 0)
     checkRules(t)
+    podaTree(t.parser.ast, "", "")
+    w = Digraph('G', filename='Saidas/nozes'+a[3] + str('.gv'))
+    tree_view(t.parser.ast, '', '', w, 0, 1)
     t.table.tablePrint()
+    w.view()
+    
