@@ -10,17 +10,22 @@ class Ger:
     def __init__(self, table):
         self.table = table
 
-def walk(root, modulo, table):
+def walk(root, modulo, table, escopo):
     if root:
         if str(root) == "declaracao_variaveis":
-            declaracaoVarGlobal(root, modulo, table)
+            
+            if escopo == "global":
+                declaracaoVarGlobal(root, modulo, table)
+            else: 
+                pass
         
         if str(root) == "declaracao_funcao":
             declaracaoFunc(root, modulo, table)
-    
+            escopo = root.child[1].child[0]
+
     if root.child:
         for i in range(0,len(root.child)):
-            walk(root.child[i], modulo, table)
+            walk(root.child[i], modulo, table, escopo)
 
 def walkFunc(root, modulo, table, builder, ret):
     if root:
@@ -82,7 +87,7 @@ if __name__ == '__main__':
     prefix(t.parser.ast, t, "global", "", "", False, 0, 0, None,0, 0)
     checkRules(t)
     podaTree(t.parser.ast, t.parser.ast , t.parser.ast, 0)
-    walk(t.parser.ast, modulo, code.table)
+    walk(t.parser.ast, modulo, code.table, "global")
     #w = Digraph('G', filename='Saidas/QUBRAnozes'+a[3] + str('.gv'))
     #tree_view(t.parser.ast, '', '', w, 0, 1)
     #t.table.tablePrint()

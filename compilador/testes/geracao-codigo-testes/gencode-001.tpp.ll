@@ -9,5 +9,3 @@ main.start:
   %"return" = alloca i32
   %"b" = alloca i32, align 4
 }
-
-@"b" = common global i32 0, align 4
