@@ -42,17 +42,47 @@ class Ger:
         auxright = root.child[1].child[0]
         if len(auxright.child) == 1:
             right = leaf(auxright)
+            
             if str(right) == "num_inteiro":
                 varRight = ir.Constant(ir.IntType(32), int(right.value))
                 builder.store(varRight, left)
+            
             elif str(right) == "num_flutuante":
                 varRight = ir.Constant(ir.FloatType(), float(right.value))
                 builder.store(varRight, left)
+            
             else:
                 varRight = self.searchVar(str(right))
                 varTemp = builder.load(varRight, "varTemp")
                 builder.store(varTemp, left)
+        
+        if len(auxright.child) == 3:
+            if str(auxright.child[0]) != "num_inteiro" or str(auxright.child[0]) != "num_flutuante":
+              sideRight = self.searchVar(str(auxright.child[0]))
+              tempRight = builder.load(sideRight, name='tempRight')
             
+            elif str(auxright.child[0]) == "num_inteiro":
+                tempRight = ir.Constant(ir.IntType(32), int(auxright.child[0].value))
+            
+            elif str(auxright.child[0]) == "num_float":
+                tempRight = ir.Constant(ir.FloatType(), float(auxright.child[0].value))
+            
+            if str(auxright.child[2]) != "num_inteiro" or str(auxright.child[2]) != "num_flutuante":
+              sideLeft = self.searchVar(str(auxright.child[2]))
+              tempLeft = builder.load(sideLeft, name='tempLeft')
+            
+            elif str(auxright.child[2]) == "num_inteiro":
+                tempLeft = ir.Constant(ir.IntType(32), int(auxright.child[2].value))
+            
+            elif str(auxright.child[2]) == "num_float":
+                tempLeft = ir.Constant(ir.FloatType(), float(auxright.child[2].value))
+            
+            
+            if str(auxright.child[1]) == "+":
+                tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
+            
+            if str(auxright.child[1]) == "-":
+                tempPlus = builder.sub(tempLeft, tempRight, name="tempPlus")
 
 
 
@@ -135,7 +165,7 @@ if __name__ == '__main__':
     #w.view()
     
 
-    arquivo = open(nameprog+'.ll','w')
-    arquivo.write(str(modulo))
-    arquivo.close()
+    #arquivo = open(nameprog+'.ll','w')
+    #arquivo.write(str(modulo))
+    #arquivo.close()
     print(modulo)
