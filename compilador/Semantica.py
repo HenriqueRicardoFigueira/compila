@@ -321,23 +321,35 @@ def prefix(root, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux):
             prefix(son, t, escopo, tipo, father, func, tam, tam2, var, dim, tamaux)
         
 
-def podaTree(root, father, grandpa):
-    nameBreak = str(root).split("_")
-    if str(root) == "declaracao_variaveis":
-        father.child[0] = leaf(root.child[1])
-    if str(root) == "atribuicao":
-        root.child[0] = leaf(root.child[0])
-        root.child[1] = root.child[1].child[0].child[0]
-    if str(nameBreak[0]) == "expressao":
-        if len(root.child) == 3:
-            print(root)
+def podaTree(root, father, grandpa, idx):
+    cont = 0
+    if root:
+        nome = str(root).split("_")
+        if len(root.child) == 1:
+            if nome[0] != "programa":
+                father.child[idx] = root.child[0]
+        if nome[0] == "atribuicao":
             root.child[0] = leaf(root.child[0])
-            root.child[1] = Tree(root.child[1].value)
-            root.child[2] = leaf(root.child[2])
-    for son in root.child:
-        podaTree(son, root, father)
-            
+        if nome[0] == "expressao":
+            if len(root.child) == 1:
+                father.child[idx] = root.child[0]
 
+        if str(root) == "declaracao_variaveis":
+            root.child[0] = leaf(root.child[0])
+            root.child[1] = leaf(root.child[1])
+        if nome[0] == "expressao" and len(root.child) == 3:
+               root.child[0] = leaf(root.child[0])
+               root.child[1] = Tree(root.child[1].value)
+               if len(root.child[2].child) == 1: 
+                   root.child[2] = leaf(root.child[2])
+        #if len(root.child) > 1:
+        #    for i in range(0, len(root.child)):
+        #        father.child.append(root.child[i])
+        #    father.child.remove(root)
+
+        for son in root.child:
+            podaTree(son, root, father, cont)
+            cont += 1
 
 def tree_view(node, strson, father, w, i, j):
     if node != None:
@@ -357,8 +369,8 @@ if __name__ == '__main__':
     t = Semantica(f.read())
     prefix(t.parser.ast, t, "global", "", "", False, 0, 0, None,0, 0)
     checkRules(t)
-    podaTree(t.parser.ast, "", "")
-    w = Digraph('G', filename='Saidas/nozes'+a[3] + str('.gv'))
+    podaTree(t.parser.ast, t.parser.ast , t.parser.ast, 0)
+    w = Digraph('G', filename='Saidas/QUBRAnozes'+a[3] + str('.gv'))
     tree_view(t.parser.ast, '', '', w, 0, 1)
     t.table.tablePrint()
     w.view()
