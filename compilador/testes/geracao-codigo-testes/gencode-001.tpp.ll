@@ -8,4 +8,7 @@ define i32 @"main"()
 main.start:
   %"return" = alloca i32
   %"b" = alloca i32, align 4
+  store i32 10, i32* @"a"
+  %"varTemp" = load i32, i32* @"a"
+  store i32 %"varTemp", i32* %"b"
 }
