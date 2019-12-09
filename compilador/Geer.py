@@ -57,7 +57,7 @@ class Ger:
                 builder.store(varTemp, left)
         
         if len(auxright.child) == 3:
-            if str(auxright.child[0]) != "num_inteiro" or str(auxright.child[0]) != "num_flutuante":
+            if str(auxright.child[0]) != "num_inteiro" and str(auxright.child[0]) != "num_flutuante":
               sideRight = self.searchVar(str(auxright.child[0]))
               tempRight = builder.load(sideRight, name='tempRight')
             
@@ -67,7 +67,7 @@ class Ger:
             elif str(auxright.child[0]) == "num_float":
                 tempRight = ir.Constant(ir.FloatType(), float(auxright.child[0].value))
             
-            if str(auxright.child[2]) != "num_inteiro" or str(auxright.child[2]) != "num_flutuante":
+            if str(auxright.child[2]) != "num_inteiro" and str(auxright.child[2]) != "num_flutuante":
               sideLeft = self.searchVar(str(auxright.child[2]))
               tempLeft = builder.load(sideLeft, name='tempLeft')
             
@@ -94,9 +94,48 @@ class Ger:
 
             if str(root) == "atribuicao":
                 self.atrib(root, modulo, builder, escopo)
+            
+            if str(root) == "repita":
+                self.lass(root, modulo, builder, escopo)
+                
+            if str(root) == "leia":
+                varLer = self.searchVar(str(root.value))
+                func = ir.FunctionType(ir.IntType(32), (), var_arg=True)
+                modulo.declare_intrinsic("scanf", (), func)
 
             for i in range(0, len(root.child)):
                 self.walkFunc(root.child[i], modulo, builder, ret, escopo)
+
+    def lass(self, root, modulo, builder, escopo):
+        start = self.ponteirosFunc[-1].append_basic_block("body")
+        stop = self.ponteirosFunc[-1].append_basic_block("end")
+        body = root.child[0]
+        express = root.child[1]
+        leftSide = express.child[0]
+        leftVar = self.searchVar(str(leftSide))
+        TempVar = builder.load(leftVar, name="leftvar")
+        
+        if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante": 
+            rightVar = self.searchVar(str(express.child[2]))
+            TempVarRight = builder.load(rightVar, name="rightvar")
+        
+        elif str(express.child[2]) == "num_inteiro":
+            TempVarRight = ir.Constant(ir.IntType(32), int(express.child[2].value))
+
+        elif str(express.child[2]) == "num_flutuante":
+            TempVarRight = ir.Constant(ir.FloatType(), int(express.child[2].value))
+
+        if str(express.child[1]) == "=":
+            op = "=="
+
+        laco = builder.icmp_signed(op, TempVar, TempVarRight, name="iflass")
+        builder.branch(start)
+        builder.position_at_start(start)
+        self.walkFunc(body, modulo, builder, "ret", escopo)
+        builder.position_at_end(start)
+        builder.cbranch(laco, start, stop)
+        builder.position_at_end(stop)
+
 
     def declaracaoVarLocal(self, root, modulo, builder):
         tipo = root.child[0]
@@ -131,6 +170,8 @@ class Ger:
     def declaracaoFunc(self, root, modulo, escopo):
         if str(root.child[1].child[0]) == "principal":
             name = "main"
+        else:
+            name = str(root.child[1].child[0])
 
         if str(root.child[0]) == "inteiro":
             returnType = ir.IntType(32)

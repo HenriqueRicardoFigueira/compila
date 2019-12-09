@@ -12,6 +12,8 @@ inteiro principal()
 	leia(b)
 
 	c := soma(a, b)
+	
+	b := soma(a, b)
 
 	escreva(c)
 
