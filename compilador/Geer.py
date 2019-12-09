@@ -17,10 +17,28 @@ def walk(root, modulo, table):
         
         if str(root) == "declaracao_funcao":
             declaracaoFunc(root, modulo, table)
+    
     if root.child:
         for i in range(0,len(root.child)):
             walk(root.child[i], modulo, table)
 
+def walkFunc(root, modulo, table, builder, ret):
+    if root:
+        if str(root) == "declaracao_variaveis":
+            declaracaoVarLocal(root, modulo, builder)
+        #if str(root) == "atribuicao":
+        #    atrib(root, modulo, builder)
+        for i in range(0, len(root.child)):
+            walkFunc(root.child[i], modulo, table, builder, ret)
+
+def declaracaoVarLocal(root, modulo, builder):
+    tipo = root.child[0]
+    if str(tipo) == "inteiro":
+        variavel = builder.alloca(ir.IntType(32), name=str(root.child[1]))
+        variavel.align = 4
+    if str(tipo) == "flutuante":
+        variavel = builder.alloca(ir.FloatType(), name=str(root.child[1]))
+        variavel.align = 4
 
 def declaracaoVarGlobal(root, modulo, table):
     tipo = root.child[0]
@@ -50,6 +68,7 @@ def declaracaoFunc(root, modulo, table):
     blockStart = func.append_basic_block('%s.start' % name)
     builder = ir.IRBuilder(blockStart)
     ret = builder.alloca(returnType, name='return')
+    walkFunc(root, modulo, table, builder, ret)
 
 
 if __name__ == '__main__':
