@@ -1,4 +1,4 @@
-; ModuleID = "./testes/geracao-codigo-testes/gencode-001.tpp"
+; ModuleID = "./testes/geracao-codigo-testes/gencode-002.tpp"
 target triple = "unknown-unknown-unknown"
 target datalayout = ""
 
@@ -15,21 +15,25 @@ define i32 @"main"()
 {
 main.start:
   %"return" = alloca i32
-  %"b" = alloca i32, align 4
-  %"c" = alloca i32, align 4
-  %".2" = call i32 @"leiaInteiro"()
-  store i32 %".2", i32* @"a"
-  store i32 5, i32* %"c"
-  %"tempRight" = load i32, i32* @"a"
-  %"tempLeft" = load i32, i32* %"c"
-  %"tempPlus" = sub i32 %"tempRight", %"tempLeft"
-  store i32 %"tempPlus", i32* %"b"
-  %"var" = load i32, i32* %"b"
+  %"ret" = alloca i32, align 4
+  store i32 10, i32* @"a"
+  %"leftvar" = load i32, i32* @"a"
+  %"testecond" = icmp sgt i32 %"leftvar", 5
+  br i1 %"testecond", label %"iftrue", label %"iffalse"
+iftrue:
+  store i32 1, i32* %"ret"
+  br label %"ifend"
+iffalse:
+  store i32 0, i32* %"ret"
+  br label %"ifend"
+ifend:
+  %"var" = load i32, i32* %"ret"
   call void @"escrevaInteiro"(i32 %"var")
   %"retorna" = load i32, i32* %"return", align 4
   br label %"endmain"
 endmain:
-  store i32 0, i32* %"return"
+  %"rightvar" = load i32, i32* %"ret"
+  store i32 %"rightvar", i32* %"return"
   %"reeet" = load i32, i32* %"return"
   ret i32 %"reeet"
 }

@@ -14,6 +14,9 @@ class Ger:
 
     def walk(self, root, modulo, escopo):
         if root:
+            father = ""
+            uncle = father
+            father = root
             if str(root) == "declaracao_variaveis":
 
                 if escopo == "global":
@@ -100,13 +103,18 @@ class Ger:
                 self.declaracaoVarLocal(root, modulo, builder)
 
             if str(root) == "retorna":
-                self.retorna(root,modulo,builder)
+                self.retorna(root, modulo, builder)
 
             if str(root) == "atribuicao":
                 self.atrib(root, modulo, builder, escopo)
             
             if str(root) == "repita":
                 self.lass(root, modulo, builder, escopo)
+                return
+
+            if str(root) == "se":
+                self.ifs(root, modulo, builder, escopo, ret)
+                return
 
             if str(root) == "chamada_funcao":
                 print(root.value)
@@ -144,9 +152,52 @@ class Ger:
 
                 #else:
                 #    builder.call(func, a)
-
+           
             for i in range(0, len(root.child)):
                 self.walkFunc(root.child[i], modulo, builder, ret, escopo)
+
+    
+    def ifs(self, root, modulo, builder, escopo, ret):
+        iftrue = self.ponteirosFunc[-1].append_basic_block('iftrue')
+        iffalse = self.ponteirosFunc[-1].append_basic_block('iffalse')
+        ifend = self.ponteirosFunc[-1].append_basic_block('ifend')
+        bodytrue = root.child[1]
+        bodyfalse = root.child[2]
+        express = root.child[0]
+        leftSide = express.child[0]
+        leftVar = self.searchVar(str(leftSide))
+        TempVar = builder.load(leftVar, name="leftvar")
+        
+        if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante": 
+            rightVar = self.searchVar(str(express.child[2]))
+            TempVarRight = builder.load(rightVar, name="rightvar")
+        
+        elif str(express.child[2]) == "num_inteiro":
+            TempVarRight = ir.Constant(ir.IntType(32), int(express.child[2].value))
+
+        elif str(express.child[2]) == "num_flutuante":
+            print("entrei")
+            TempVarRight = ir.Constant(ir.FloatType(), float(express.child[2].value))
+        
+        op = str(express.child[1])
+        
+        if op == "=":
+            op = "=="
+        
+        ifx = builder.icmp_signed(op, TempVar, TempVarRight, name='testecond')
+        builder.cbranch(ifx, iftrue, iffalse)
+        builder.position_at_end(iftrue)
+        self.walkFunc(bodytrue, modulo, builder, ret, escopo)
+        builder.branch(ifend)
+
+        builder.position_at_end(iffalse)
+        self.walkFunc(bodyfalse, modulo, builder, ret, escopo)
+        builder.branch(ifend)
+        builder.position_at_end(ifend)
+       
+
+
+
 
     def lass(self, root, modulo, builder, escopo):
         start = self.ponteirosFunc[-1].append_basic_block("body")

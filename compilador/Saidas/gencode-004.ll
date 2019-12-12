@@ -35,15 +35,6 @@ cond:
   %"iflass" = icmp eq i32 %"leftvar", 0
   br i1 %"iflass", label %"end", label %"body"
 end:
-  %"tempRight.2" = load i32, i32* @"soma"
-  %"tempLeft.1" = load i32, i32* @"n"
-  %"tempPlus.2" = add i32 %"tempLeft.1", %"tempRight.2"
-  store i32 %"tempPlus.2", i32* @"soma"
-  %"tempRight.3" = load i32, i32* @"n"
-  %"tempPlus.3" = sub i32 %"tempRight.3", 1
-  store i32 %"tempPlus.3", i32* @"n"
-  %"var.1" = load i32, i32* @"n"
-  call void @"escrevaInteiro"(i32 %"var.1")
   %"retorna" = load i32, i32* %"return", align 4
   br label %"endmain"
 endmain:
