@@ -326,7 +326,7 @@ def podaTree(root, father, grandpa, idx):
     if root:
         nome = str(root).split("_")
         if len(root.child) == 1:
-            if nome[0] != "programa":
+            if nome[0] != "programa" and nome[0] != "chamada":
                 father.child[idx] = root.child[0]
         if nome[0] == "atribuicao":
             root.child[0] = leaf(root.child[0])

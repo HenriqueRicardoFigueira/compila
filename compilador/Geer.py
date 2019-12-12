@@ -36,6 +36,11 @@ class Ger:
         for i in self.ponteirosVar:
             if i.name == name:
                 return i
+
+    def searchFunc(self, name):
+        for i in self.ponteirosFunc:
+            if i.name == name:
+                return i
     
     def atrib(self, root, modulo, builder, escopo):
         left = self.searchVar(str(root.child[0]))
@@ -80,9 +85,13 @@ class Ger:
             
             if str(auxright.child[1]) == "+":
                 tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
+                x = builder.load(tempPlus, name="x")
+                esc = builder.load(left, name="esc")
+                builder.store(tempPlus, left)
             
             if str(auxright.child[1]) == "-":
-                tempPlus = builder.sub(tempLeft, tempRight, name="tempPlus")
+                tempPlus = builder.sub(tempRight, tempLeft, name="tempPlus")
+                builder.store(tempPlus, left)
 
 
 
@@ -100,11 +109,43 @@ class Ger:
             
             if str(root) == "repita":
                 self.lass(root, modulo, builder, escopo)
-                
+
+            if str(root) == "chamada_funcao":
+                print(root.value)
+                if len(root.child) == 1:
+                    var = leaf(root.child[0])
+                    vaar = self.searchVar(str(var))
+                    func = self.searchFunc(str(root.value))
+                    a = []
+                    a.append(builder.load(vaar, "no"))
+                    builder.call(func, a)
+            
+            if str(root) == "escreva":    
+                if len(root.child[0].child) == 1:
+                    varEscreva = self.searchVar(str(leaf(root)))
+                    funcInt = self.searchFunc("escrevaInteiro")
+                    func = self.searchFunc("escrevaFlutuante")
+            
+                    a = []
+                    a.append(builder.load(varEscreva, "var"))
+                    print(a)
+                    #if varEscreva.type == ir.IntType(32):
+                    
+                    builder.call(funcInt, a)  
+                    #if varEscreva.type != "i32":
+                    #    builder.call(func, a)
+
+            
             if str(root) == "leia":
                 varLer = self.searchVar(str(root.value))
-                func = ir.FunctionType(ir.IntType(32), (), var_arg=True)
-                modulo.declare_intrinsic("scanf", (), func)
+                funcInt = self.searchFunc("leiaInteiro")
+                func = self.searchFunc("leiaFlutuante")
+                a = []
+                #if varLer.type == ir.IntType(32):
+                builder.store(builder.call(funcInt, a), varLer )
+
+                #else:
+                #    builder.call(func, a)
 
             for i in range(0, len(root.child)):
                 self.walkFunc(root.child[i], modulo, builder, ret, escopo)
@@ -132,13 +173,6 @@ class Ger:
         if str(express.child[1]) == "=":
             op = "=="
 
-        #laco = builder.icmp_signed(op, TempVar, TempVarRight, name="iflass")
-        #builder.branch(start)
-        #builder.position_at_start(start)
-        #self.walkFunc(body, modulo, builder, "ret", escopo)
-        #builder.position_at_end(start)
-        #builder.cbranch(laco, start, stop)
-        #builder.position_at_end(stop)
         builder.position_at_end(start)
         builder.branch(cond)
         builder.position_at_end(cond)
@@ -148,7 +182,6 @@ class Ger:
 
     def retorna(self, root, modulo, builder):
         r = self.searchVar("return")
-        print(r)
         ret = builder.load(r, name="retorna", align=4)
         name = self.ponteirosFunc[-1].name
         stop = self.ponteirosFunc[-1].append_basic_block("end"+name)
@@ -159,7 +192,6 @@ class Ger:
         if len(express.child) == 1:
             aux = leaf(express.child[0])
             if str(aux) != "num_inteiro" and str(aux) != "num_flutuante": 
-                print(str(leaf(aux)))
                 rightVar = self.searchVar(str(leaf(aux)))
                 TempVarRight = builder.load(rightVar, name="rightvar")
         
@@ -173,37 +205,37 @@ class Ger:
             builder.store(TempVarRight, rets)
             builder.ret(builder.load(rets,name="reeet"))
         
-        else:
-            if str(express.child[0]) != "num_inteiro" and str(express.child[0]) != "num_flutuante":
-                sideRight = self.searchVar(str(express.child[0]))
-                tempRight = builder.load(sideRight, name='tempRight')
-            
-            elif str(express.child[0]) == "num_inteiro":
-                tempRight = ir.Constant(ir.IntType(32), int(express.child[0].value))
-            
-            elif str(express.child[0]) == "num_float":
-                tempRight = ir.Constant(ir.FloatType(), float(express.child[0].value))
-            
-            if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante":
-              sideLeft = self.searchVar(str(express.child[2]))
-              tempLeft = builder.load(sideLeft, name='tempLeft')
-            
-            elif str(express.child[2]) == "num_inteiro":
-                tempLeft = ir.Constant(ir.IntType(32), int(express.child[2].value))
-            
-            elif str(express.child[2]) == "num_float":
-                tempLeft = ir.Constant(ir.FloatType(), float(express.child[2].value))
-            
-            
-            if str(express.child[1]) == "+":
-                tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
-            
-            if str(express.child[1]) == "-":
-                tempPlus = builder.sub(tempLeft, tempRight, name="tempPlus")
+        #else:
+        #    if str(express.child[0]) != "num_inteiro" and str(express.child[0]) != "num_flutuante":
+        #        sideRight = self.searchVar(str(express.child[0]))
+        #        tempRight = builder.load(sideRight, name='tempRight')
+        #    
+        #    elif str(express.child[0]) == "num_inteiro":
+        #        tempRight = ir.Constant(ir.IntType(32), int(express.child[0].value))
+        #    
+        #    elif str(express.child[0]) == "num_float":
+        #        tempRight = ir.Constant(ir.FloatType(), float(express.child[0].value))
+        #    
+        #    if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante":
+        #      sideLeft = self.searchVar(str(express.child[2]))
+        #      tempLeft = builder.load(sideLeft, name='tempLeft')
+        #    
+        #    elif str(express.child[2]) == "num_inteiro":
+        #        tempLeft = ir.Constant(ir.IntType(32), int(express.child[2].value))
+        #    
+        #    elif str(express.child[2]) == "num_float":
+        #        tempLeft = ir.Constant(ir.FloatType(), float(express.child[2].value))
+        #    
+        #    
+        #    if str(express.child[1]) == "+":
+        #        tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
+        #    
+        #    if str(express.child[1]) == "-":
+        #        tempPlus = builder.sub(tempLeft, tempRight, name="tempPlus")
+#
 
 
-
-        print(len(root.child[0].child[0].child))
+      
         
     def declaracaoVarLocal(self, root, modulo, builder):
         tipo = root.child[0]
@@ -255,7 +287,16 @@ class Ger:
         self.ponteirosVar.append(ret)
         self.ponteirosFunc.append(func)
         self.walkFunc(root, modulo, builder, ret, escopo)
-
+    
+    def start(self, module):
+        escrevaInteiro = ir.Function(module,ir.FunctionType(ir.VoidType(), [ir.IntType(32)]),name="escrevaInteiro")
+        self.ponteirosFunc.append(escrevaInteiro)
+        escrevaFlutuante = ir.Function(module,ir.FunctionType(ir.VoidType(),[ir.FloatType()]),name="escrevaFlutuante")
+        self.ponteirosFunc.append(escrevaFlutuante)
+        leiaInteiro = ir.Function(module,ir.FunctionType(ir.IntType(32),[]),name="leiaInteiro")
+        self.ponteirosFunc.append(leiaInteiro)
+        leiaFlutuante = ir.Function(module,ir.FunctionType(ir.FloatType(),[]),name="leiaFlutuante")
+        self.ponteirosFunc.append(leiaFlutuante)
 
 if __name__ == '__main__':
     
@@ -268,14 +309,16 @@ if __name__ == '__main__':
     checkRules(t)
     x = Ger(t.table)
     podaTree(t.parser.ast, t.parser.ast , t.parser.ast, 0)
+    x.start(modulo)
     x.walk(t.parser.ast, modulo, "global")
     #w = Digraph('G', filename='Saidas/QUBRAnozes'+a[3] + str('.gv'))
     #tree_view(t.parser.ast, '', '', w, 0, 1)
     #t.table.tablePrint()
     #w.view()
     
-
-    #arquivo = open(nameprog+'.ll','w')
-    #arquivo.write(str(modulo))
-    #arquivo.close()
+    z = nameprog.split('/')
+    o = z[3].split('.')
+    arquivo = open('Saidas/'+o[0]+'.ll','w')
+    arquivo.write(str(modulo))
+    arquivo.close()
     print(modulo)

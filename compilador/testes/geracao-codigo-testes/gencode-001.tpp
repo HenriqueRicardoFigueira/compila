@@ -6,8 +6,9 @@ inteiro principal()
 	inteiro: c
 	
 	a := 10
-	c := 2
+	c := 5
 	b := a - c
+	escreva(b)
 	
     retorna(0)
 fim
