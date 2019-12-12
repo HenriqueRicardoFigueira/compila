@@ -5,7 +5,7 @@ inteiro principal()
 	inteiro: b
 	inteiro: c
 	
-	a := 10
+	leia(a)
 	c := 5
 	b := a - c
 	escreva(b)

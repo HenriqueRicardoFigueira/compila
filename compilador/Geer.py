@@ -85,8 +85,6 @@ class Ger:
             
             if str(auxright.child[1]) == "+":
                 tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
-                x = builder.load(tempPlus, name="x")
-                esc = builder.load(left, name="esc")
                 builder.store(tempPlus, left)
             
             if str(auxright.child[1]) == "-":
@@ -172,12 +170,14 @@ class Ger:
 
         if str(express.child[1]) == "=":
             op = "=="
-
+        
+        builder.branch(start)
         builder.position_at_end(start)
+        self.walkFunc(body,modulo,builder, None, escopo)
         builder.branch(cond)
         builder.position_at_end(cond)
         laco = builder.icmp_signed(op, TempVar, TempVarRight, name="iflass")
-        builder.cbranch(laco, start, stop)
+        builder.cbranch(laco, stop, start)
         builder.position_at_end(stop)
 
     def retorna(self, root, modulo, builder):

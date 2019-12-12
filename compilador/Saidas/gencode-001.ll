@@ -17,7 +17,8 @@ main.start:
   %"return" = alloca i32
   %"b" = alloca i32, align 4
   %"c" = alloca i32, align 4
-  store i32 10, i32* @"a"
+  %".2" = call i32 @"leiaInteiro"()
+  store i32 %".2", i32* @"a"
   store i32 5, i32* %"c"
   %"tempRight" = load i32, i32* @"a"
   %"tempLeft" = load i32, i32* %"c"
