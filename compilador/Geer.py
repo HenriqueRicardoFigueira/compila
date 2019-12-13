@@ -110,7 +110,7 @@ class Ger:
             
             if str(root) == "repita":
                 self.lass(root, modulo, builder, escopo)
-                return
+                
 
             if str(root) == "se":
                 self.ifs(root, modulo, builder, escopo, ret)
@@ -196,9 +196,6 @@ class Ger:
         builder.position_at_end(ifend)
        
 
-
-
-
     def lass(self, root, modulo, builder, escopo):
         start = self.ponteirosFunc[-1].append_basic_block("body")
         cond = self.ponteirosFunc[-1].append_basic_block("cond")
@@ -207,7 +204,7 @@ class Ger:
         express = root.child[1]
         leftSide = express.child[0]
         leftVar = self.searchVar(str(leftSide))
-        TempVar = builder.load(leftVar, name="leftvar")
+        
         
         if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante": 
             rightVar = self.searchVar(str(express.child[2]))
@@ -219,16 +216,24 @@ class Ger:
         elif str(express.child[2]) == "num_flutuante":
             TempVarRight = ir.Constant(ir.FloatType(), int(express.child[2].value))
 
-        if str(express.child[1]) == "=":
+        op = str(express.child[1])
+        
+        if op == "=":
             op = "=="
+
+        builder.branch(cond)
+        builder.position_at_end(cond)
+        
+       
+        self.walkFunc(body, modulo, builder, None, escopo)
         
         builder.branch(start)
         builder.position_at_end(start)
-        self.walkFunc(body,modulo,builder, None, escopo)
-        builder.branch(cond)
-        builder.position_at_end(cond)
+        TempVar = builder.load(leftVar, name="leftvar")
+        #builder.position_at_end(start)
+        
         laco = builder.icmp_signed(op, TempVar, TempVarRight, name="iflass")
-        builder.cbranch(laco, stop, start)
+        builder.cbranch(laco, stop, cond)
         builder.position_at_end(stop)
 
     def retorna(self, root, modulo, builder):
