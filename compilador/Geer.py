@@ -14,9 +14,6 @@ class Ger:
 
     def walk(self, root, modulo, escopo):
         if root:
-            father = ""
-            uncle = father
-            father = root
             if str(root) == "declaracao_variaveis":
 
                 if escopo == "global":
@@ -48,6 +45,7 @@ class Ger:
     def atrib(self, root, modulo, builder, escopo):
         left = self.searchVar(str(root.child[0]))
         auxright = root.child[1].child[0]
+        self.expressSolution(root.child[1], modulo, builder, escopo, root)
         if len(auxright.child) == 1:
             right = leaf(auxright)
             
@@ -100,13 +98,14 @@ class Ger:
         if root:
 
             if str(root) == "declaracao_variaveis":
-                self.declaracaoVarLocal(root, modulo, builder)
+                self.declaracaoVarLocal(modulo, builder, str(root.child[0]), root.child[1])
 
             if str(root) == "retorna":
                 self.retorna(root, modulo, builder)
 
             if str(root) == "atribuicao":
                 self.atrib(root, modulo, builder, escopo)
+                return
             
             if str(root) == "repita":
                 self.lass(root, modulo, builder, escopo)
@@ -117,7 +116,6 @@ class Ger:
                 return
 
             if str(root) == "chamada_funcao":
-                print(root.value)
                 if len(root.child) == 1:
                     var = leaf(root.child[0])
                     vaar = self.searchVar(str(var))
@@ -134,7 +132,6 @@ class Ger:
             
                     a = []
                     a.append(builder.load(varEscreva, "var"))
-                    print(a)
                     #if varEscreva.type == ir.IntType(32):
                     
                     builder.call(funcInt, a)  
@@ -156,6 +153,74 @@ class Ger:
             for i in range(0, len(root.child)):
                 self.walkFunc(root.child[i], modulo, builder, ret, escopo)
 
+    def expressAux(self, root):
+        node = root
+        father = ""
+        while True:
+            if len(node.child) > 1:
+                x = node, father
+                return x
+            elif len(node.child) == 1:
+                father = node
+                node = node.child[0]
+            else:
+                return False
+
+
+    def expressSolution(self, root, module, builder, escopo, parent):
+        temp = self.expressAux(root)
+        if temp != False:
+            node = temp[0]
+            father = temp[1]
+            if str(node) == "lista_argumentos":
+                internoright = self.expressAux(node.child[0])
+                internoleft = self.expressAux(node.child[0])
+                argsExt = []
+                
+                if internoright != False:
+                    arg1 = leaf(internoright[0].child[0])
+                    arg2 = leaf(internoright[0].child[1])
+                    argleft = self.searchVar(str(arg1))
+                    argright = self.searchVar(str(arg2))
+                    args = []
+                    args.append(builder.load(argleft, name="arg1"))
+                    args.append(builder.load(argright, name="arg2"))
+                    name = internoright[1].value
+                    func = self.searchFunc(str(name))
+                    variavel1 = builder.alloca(ir.IntType(32), name="TempVar")
+                    self.ponteirosVar.append(variavel1)
+                    builder.store(builder.call(func,args),variavel1)
+                    print(self.searchVar("TempVar"))
+                    argsExt.append(builder.load(self.searchVar("TempVar")))
+                
+                else:
+                    v = self.searchVar(str(leaf(node[0])))
+                    argsExt.append(builder.loar(v, "argext1"))
+                
+                if internoleft != False:
+                    arg1 = leaf(internoright[0].child[0])
+                    arg2 = leaf(internoright[0].child[1])
+                    argleft = self.searchVar(str(arg1))
+                    argright = self.searchVar(str(arg2))
+                    args = []
+                    args.append(builder.load(argleft, name="arg1"))
+                    args.append(builder.load(argright, name="arg2"))
+                    name = internoleft[1].value
+                    func = self.searchFunc(str(name))
+                    variavel2 = builder.alloca(ir.IntType(32), name="TempVar")
+                    self.ponteirosVar.append(variavel2)
+                    builder.store(builder.call(func,args),variavel2)
+                    argsExt.append(builder.load(self.searchVar("TempVar")))
+               
+                else:
+                    v = self.searchVar(str(leaf(node[0])))
+                    argsExt.append(builder.loar(v, "argext2"))
+                    print("addei3")
+                
+                x = self.searchVar(str(parent.child[0]))
+                funk = self.searchFunc(str(father.value))
+                z = builder.call(funk, argsExt)
+                builder.store(z , x)
     
     def ifs(self, root, modulo, builder, escopo, ret):
         iftrue = self.ponteirosFunc[-1].append_basic_block('iftrue')
@@ -176,7 +241,6 @@ class Ger:
             TempVarRight = ir.Constant(ir.IntType(32), int(express.child[2].value))
 
         elif str(express.child[2]) == "num_flutuante":
-            print("entrei")
             TempVarRight = ir.Constant(ir.FloatType(), float(express.child[2].value))
         
         op = str(express.child[1])
@@ -261,48 +325,51 @@ class Ger:
             builder.store(TempVarRight, rets)
             builder.ret(builder.load(rets,name="reeet"))
         
-        #else:
-        #    if str(express.child[0]) != "num_inteiro" and str(express.child[0]) != "num_flutuante":
-        #        sideRight = self.searchVar(str(express.child[0]))
-        #        tempRight = builder.load(sideRight, name='tempRight')
-        #    
-        #    elif str(express.child[0]) == "num_inteiro":
-        #        tempRight = ir.Constant(ir.IntType(32), int(express.child[0].value))
-        #    
-        #    elif str(express.child[0]) == "num_float":
-        #        tempRight = ir.Constant(ir.FloatType(), float(express.child[0].value))
-        #    
-        #    if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante":
-        #      sideLeft = self.searchVar(str(express.child[2]))
-        #      tempLeft = builder.load(sideLeft, name='tempLeft')
-        #    
-        #    elif str(express.child[2]) == "num_inteiro":
-        #        tempLeft = ir.Constant(ir.IntType(32), int(express.child[2].value))
-        #    
-        #    elif str(express.child[2]) == "num_float":
-        #        tempLeft = ir.Constant(ir.FloatType(), float(express.child[2].value))
-        #    
-        #    
-        #    if str(express.child[1]) == "+":
-        #        tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
-        #    
-        #    if str(express.child[1]) == "-":
-        #        tempPlus = builder.sub(tempLeft, tempRight, name="tempPlus")
+        else:
+            if str(express.child[0]) != "num_inteiro" and str(express.child[0]) != "num_flutuante":
+                sideRight = self.searchVar(str(express.child[0]))
+                tempRight = builder.load(sideRight, name='tempRight')
+            
+            elif str(express.child[0]) == "num_inteiro":
+                tempRight = ir.Constant(ir.IntType(32), int(express.child[0].value))
+            
+            elif str(express.child[0]) == "num_float":
+                tempRight = ir.Constant(ir.FloatType(), float(express.child[0].value))
+            
+            if str(express.child[2]) != "num_inteiro" and str(express.child[2]) != "num_flutuante":
+              sideLeft = self.searchVar(str(express.child[2]))
+              tempLeft = builder.load(sideLeft, name='tempLeft')
+            
+            elif str(express.child[2]) == "num_inteiro":
+                tempLeft = ir.Constant(ir.IntType(32), int(express.child[2].value))
+            
+            elif str(express.child[2]) == "num_float":
+                tempLeft = ir.Constant(ir.FloatType(), float(express.child[2].value))
+            
+            
+            if str(express.child[1]) == "+":
+                tempPlus = builder.add(tempLeft, tempRight, name="tempPlus")
+            
+            if str(express.child[1]) == "-":
+                tempPlus = builder.sub(tempLeft, tempRight, name="tempPlus")
+            
+            rets = self.searchVar("return")
+            builder.store(tempPlus, rets)
+            builder.ret(builder.load(rets,name="reeet"))
 #
 
 
       
         
-    def declaracaoVarLocal(self, root, modulo, builder):
-        tipo = root.child[0]
+    def declaracaoVarLocal(self, modulo, builder, tipo, var):
 
         if str(tipo) == "inteiro":
-            variavel = builder.alloca(ir.IntType(32), name=str(root.child[1]))
+            variavel = builder.alloca(ir.IntType(32), name=str(var))
             variavel.align = 4
             self.ponteirosVar.append(variavel)
 
         if str(tipo) == "flutuante":
-            variavel = builder.alloca(ir.FloatType(), name=str(root.child[1]))
+            variavel = builder.alloca(ir.FloatType(), name=str(var))
             variavel.align = 4
             self.ponteirosVar.append(variavel)
 
@@ -323,7 +390,20 @@ class Ger:
             variavel.align = 4
             self.ponteirosVar.append(variavel)
 
+    def addArgs(self, tipo):
+        
+        if str(tipo) == "inteiro":
+            return ir.IntType(32)
+        else:
+            return ir.FloatType()
+
+
+    
     def declaracaoFunc(self, root, modulo, escopo):
+
+        args = []
+        declara = []
+
         if str(root.child[1].child[0]) == "principal":
             name = "main"
         else:
@@ -335,10 +415,38 @@ class Ger:
         else:
             returnType = ir.FloatType()
 
-        funcType = ir.FunctionType(returnType,[])
+        lista = root.child[1].child[2]
+        
+        if len(lista.child) > 1:
+            par2 = lista.child[0].child[0].value
+            tipo2 = lista.child[0].child[0].child[0]
+            par1 = lista.child[1].value
+            tipo1 = lista.child[1].child[0] 
+            args.append(self.addArgs(tipo1))
+            args.append(self.addArgs(tipo2))
+            declara.append([tipo1, par1])
+            declara.append([tipo2, par2])
+
+            print(par1, tipo1, par2, tipo2)
+        
+        else:
+            x = str(lista.child[0])
+            x = x.split(" ") 
+            if x[0] != "vazio":
+                print(lista.child[0])
+                par1 = lista.child[0].value
+                tipo1 = lista.child[0].child[0]
+                args.append(self.addArgs(tipo1))
+                declara.append([tipo1, par1])
+        
+        funcType = ir.FunctionType(returnType, args)
         func = ir.Function(modulo, funcType, name=name)
         blockStart = func.append_basic_block('%s.start' % name)
         builder = ir.IRBuilder(blockStart)
+
+        for x in declara:
+            self.declaracaoVarLocal(modulo, builder, x[0], x[1])
+            
         ret = builder.alloca(returnType, name='return')
         self.ponteirosVar.append(ret)
         self.ponteirosFunc.append(func)
