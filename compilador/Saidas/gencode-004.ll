@@ -44,7 +44,6 @@ end:
   store i32 %"tempPlus.3", i32* @"n"
   %"var.1" = load i32, i32* @"n"
   call void @"escrevaInteiro"(i32 %"var.1")
-  %"retorna" = load i32, i32* %"return", align 4
   br label %"endmain"
 endmain:
   store i32 0, i32* %"return"

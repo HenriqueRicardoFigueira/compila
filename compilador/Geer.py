@@ -45,9 +45,12 @@ class Ger:
     def atrib(self, root, modulo, builder, escopo):
         left = self.searchVar(str(root.child[0]))
         auxright = root.child[1].child[0]
-        self.expressSolution(root.child[1], modulo, builder, escopo, root)
+        
         if len(auxright.child) == 1:
             right = leaf(auxright)
+
+            if str(right) == "chamada_funcao":
+                self.expressSolution(auxright, modulo, builder, escopo, root)
             
             if str(right) == "num_inteiro":
                 varRight = ir.Constant(ir.IntType(32), int(right.value))
@@ -171,10 +174,11 @@ class Ger:
         temp = self.expressAux(root)
         if temp != False:
             node = temp[0]
+            print(node)
             father = temp[1]
             if str(node) == "lista_argumentos":
                 internoright = self.expressAux(node.child[0])
-                internoleft = self.expressAux(node.child[0])
+                internoleft = self.expressAux(node.child[1])
                 argsExt = []
                 
                 if internoright != False:
@@ -189,17 +193,17 @@ class Ger:
                     func = self.searchFunc(str(name))
                     variavel1 = builder.alloca(ir.IntType(32), name="TempVar")
                     self.ponteirosVar.append(variavel1)
-                    builder.store(builder.call(func,args),variavel1)
-                    print(self.searchVar("TempVar"))
+                    g = builder.call(func , args)
+                    builder.store(g , variavel1)
                     argsExt.append(builder.load(self.searchVar("TempVar")))
                 
                 else:
-                    v = self.searchVar(str(leaf(node[0])))
-                    argsExt.append(builder.loar(v, "argext1"))
+                    v = self.searchVar(str(leaf(node.child[1])))
+                    argsExt.append(builder.load(v, "argext1"))
                 
                 if internoleft != False:
-                    arg1 = leaf(internoright[0].child[0])
-                    arg2 = leaf(internoright[0].child[1])
+                    arg1 = leaf(internoleft[0].child[0])
+                    arg2 = leaf(internoleft[0].child[1])
                     argleft = self.searchVar(str(arg1))
                     argright = self.searchVar(str(arg2))
                     args = []
@@ -213,9 +217,8 @@ class Ger:
                     argsExt.append(builder.load(self.searchVar("TempVar")))
                
                 else:
-                    v = self.searchVar(str(leaf(node[0])))
-                    argsExt.append(builder.loar(v, "argext2"))
-                    print("addei3")
+                    v = self.searchVar(str(leaf(node.child[0])))
+                    argsExt.append(builder.load(v, "argext2"))
                 
                 x = self.searchVar(str(parent.child[0]))
                 funk = self.searchFunc(str(father.value))
@@ -301,8 +304,9 @@ class Ger:
         builder.position_at_end(stop)
 
     def retorna(self, root, modulo, builder):
+       
         r = self.searchVar("return")
-        ret = builder.load(r, name="retorna", align=4)
+        #ret = builder.load(r, name="retorna", align=4)
         name = self.ponteirosFunc[-1].name
         stop = self.ponteirosFunc[-1].append_basic_block("end"+name)
         builder.branch(stop)
@@ -356,11 +360,7 @@ class Ger:
             rets = self.searchVar("return")
             builder.store(tempPlus, rets)
             builder.ret(builder.load(rets,name="reeet"))
-#
-
-
-      
-        
+  
     def declaracaoVarLocal(self, modulo, builder, tipo, var):
 
         if str(tipo) == "inteiro":
@@ -426,20 +426,17 @@ class Ger:
             args.append(self.addArgs(tipo2))
             declara.append([tipo1, par1])
             declara.append([tipo2, par2])
-
-            print(par1, tipo1, par2, tipo2)
         
         else:
             x = str(lista.child[0])
             x = x.split(" ") 
             if x[0] != "vazio":
-                print(lista.child[0])
                 par1 = lista.child[0].value
                 tipo1 = lista.child[0].child[0]
                 args.append(self.addArgs(tipo1))
                 declara.append([tipo1, par1])
         
-        funcType = ir.FunctionType(returnType, args)
+        funcType = ir.FunctionType(returnType, (args))
         func = ir.Function(modulo, funcType, name=name)
         blockStart = func.append_basic_block('%s.start' % name)
         builder = ir.IRBuilder(blockStart)

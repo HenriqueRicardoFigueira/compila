@@ -4,7 +4,7 @@ inteiro soma(inteiro: x, inteiro: y)
 fim
 
 inteiro sub(inteiro: z, inteiro: t)
-    retorna(z + t)
+    retorna(z - t)
 fim
 
 inteiro principal()
