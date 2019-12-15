@@ -1,9 +1,10 @@
 
-inteiro soma(inteiro: x, inteiro: y)
+inteiro soma(inteiro: x, inteiro: y)    
     retorna(x + y)
 fim
 
 inteiro sub(inteiro: z, inteiro: t)
+
     retorna(z - t)
 fim
 

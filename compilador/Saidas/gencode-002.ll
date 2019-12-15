@@ -16,14 +16,17 @@ define i32 @"main"()
 main.start:
   %"return" = alloca i32
   %"ret" = alloca i32, align 4
+  store i32 10, i32* @"a"
   %"leftvar" = load i32, i32* @"a"
   %"testecond" = icmp sgt i32 %"leftvar", 5
-  br i1 %"testecond", label %"iftrue", label %"iffalse"
-iftrue:
-  br label %"ifend"
-iffalse:
-  br label %"ifend"
-ifend:
+  br i1 %"testecond", label %"if", label %"else"
+if:
+  store i32 1, i32* %"ret"
+  br label %"end"
+else:
+  store i32 0, i32* %"ret"
+  br label %"end"
+end:
   %"var" = load i32, i32* %"ret"
   call void @"escrevaInteiro"(i32 %"var")
   br label %"endmain"
