@@ -263,19 +263,19 @@ class Ger:
         if c[0] == "vazio":
             
             ifs = self.ponteirosFunc[-1].append_basic_block('if')
-            els = self.ponteirosFunc[-1].append_basic_block('else')
+            #els = self.ponteirosFunc[-1].append_basic_block('else')
             end = self.ponteirosFunc[-1].append_basic_block('end')
 
             ifx = builder.icmp_signed(op, TempVar, TempVarRight, name='testecond')
 
-            builder.cbranch(ifx, ifs, els)
+            builder.cbranch(ifx, ifs, end)
 
             builder.position_at_end(ifs)
             self.walkFunc(bodytrue, modulo, builder, ret, escopo)
-            builder.branch(end)
+            #builder.branch(end)
 
-            builder.position_at_end(els)
-            self.walkFunc(bodyfalse, modulo, builder, ret, escopo)
+            #builder.position_at_end(els)
+            #self.walkFunc(bodyfalse, modulo, builder, ret, escopo)
 
             builder.branch(end)
             builder.position_at_end(end)
@@ -286,7 +286,7 @@ class Ger:
             els = self.ponteirosFunc[-1].append_basic_block('else')
             notifs = self.ponteirosFunc[-1].append_basic_block('ifend')
             
-            #builder.position_at_end(cond)
+            
             ifx = builder.icmp_signed(op, TempVar, TempVarRight, name='testecond')
             builder.cbranch(ifx, ifs, els)
             
@@ -295,10 +295,14 @@ class Ger:
             builder.branch(notifs)
 #
             builder.position_at_end(els)
-            self.walkFunc(bodytrue.child[1], modulo, builder, ret, escopo)
-        #    builder.branch(notifs)
+            self.walkFunc(bodytrue.child[0], modulo, builder, ret, escopo)
+            builder.branch(notifs)
+            builder.position_at_end(notifs)
+            #self.walkFunc(bodytrue.child[1], modulo, builder, ret, escopo)
+        #   builder.branch(notifs)
+            
+            #builder.position_at_end(end)
         #    
-        #    builder.position_at_end(notifs)
        
 
     def lass(self, root, modulo, builder, escopo):
@@ -349,7 +353,7 @@ class Ger:
         start = self.ponteirosFunc[-1].append_basic_block("start"+name)
         builder.branch(start)
         builder.position_at_end(start)
-        stop = self.ponteirosFunc[-1].append_basic_block("end"+name)
+        #stop = self.ponteirosFunc[-1].append_basic_block("end"+name)
         
         
         

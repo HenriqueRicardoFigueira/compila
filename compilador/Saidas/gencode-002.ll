@@ -19,18 +19,15 @@ main.start:
   store i32 10, i32* @"a"
   %"leftvar" = load i32, i32* @"a"
   %"testecond" = icmp sgt i32 %"leftvar", 5
-  br i1 %"testecond", label %"if", label %"else"
+  br i1 %"testecond", label %"if", label %"end"
 if:
   store i32 1, i32* %"ret"
-  br label %"end"
-else:
-  store i32 0, i32* %"ret"
   br label %"end"
 end:
   %"var" = load i32, i32* %"ret"
   call void @"escrevaInteiro"(i32 %"var")
-  br label %"endmain"
-endmain:
+  br label %"startmain"
+startmain:
   %"rightvar" = load i32, i32* %"ret"
   store i32 %"rightvar", i32* %"return"
   %"reeet" = load i32, i32* %"return"
